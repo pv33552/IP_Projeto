@@ -156,15 +156,15 @@ void listar_equipas()
         return;
     }
 
-    // Ler número de equipas
     fread(&nTeams, sizeof(int), 1, fic);
+
+    printf("\n=== LISTA DE EQUIPAS ===\n");
 
     for (int i = 0; i < nTeams; i++)
     {
         TEAM *t = malloc(sizeof(TEAM));
         fread(t, sizeof(TEAM), 1, fic);
 
-        // Reconstruir os jogadores
         for (int j = 0; j < t->nPlayers; j++)
         {
             PLAYER *p = malloc(sizeof(PLAYER));
@@ -174,10 +174,83 @@ void listar_equipas()
 
         listaEquipas[i] = t;
 
-        // Mostrar
-        printf("\n=== EQUIPA %d ===\n", i + 1);
-        printf("Nome: %s\n", t->name);
-        printf("Jogadores: %d\n", t->nPlayers);
+        printf("%d - %s (%d jogadores)\n", i, t->name, t->nPlayers);
+    }
+
+    fclose(fic);
+
+    printf("\nO que pretende fazer?\n");
+    printf("1 - Remover uma equipa\n");
+    printf("2 - Voltar atras\n");
+    printf("Escolha: ");
+
+    int opc;
+    scanf("%d", &opc);
+
+    if (opc == 1)
+    {
+        printf("\nIntroduza o índice da equipa a remover: ");
+        int idx;
+        scanf("%d", &idx);
+
+        if (idx < 0 || idx >= nTeams)
+        {
+            printf("Índice invalido. Nada removido.\n");
+            return;
+        }
+
+        remover_equipa(idx);
+    }
+    else
+    {
+        printf("A voltar ao menu.\n");
+    }
+}
+
+
+/* ---- 1.1 Remover equipa ---- */
+
+void remover_equipa(int idx)
+{
+    if (idx < 0 || idx >= nTeams)
+    {
+        printf("Equipa invalida!\n");
+        return;
+    }
+
+    TEAM *t = listaEquipas[idx];
+
+    // Libertar jogadores
+    for (int j = 0; j < t->nPlayers; j++)
+        free(t->players[j]);
+
+    free(t);
+
+    // Mover restantes equipas
+    for (int i = idx; i < nTeams - 1; i++)
+        listaEquipas[i] = listaEquipas[i + 1];
+
+    nTeams--;
+
+    printf("\nEquipa removida com sucesso!\n");
+
+    // Atualizar ficheiro
+    FILE *fic = fopen("equipas.dat", "wb");
+    if (!fic)
+    {
+        printf("Erro a atualizar ficheiro!\n");
+        return;
+    }
+
+    fwrite(&nTeams, sizeof(int), 1, fic);
+
+    for (int i = 0; i < nTeams; i++)
+    {
+        TEAM *t2 = listaEquipas[i];
+        fwrite(t2, sizeof(TEAM), 1, fic);
+
+        for (int j = 0; j < t2->nPlayers; j++)
+            fwrite(t2->players[j], sizeof(PLAYER), 1, fic);
     }
 
     fclose(fic);
