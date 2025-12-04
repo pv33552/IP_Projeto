@@ -119,23 +119,23 @@ void criaOuLeFicheiroJogadores(PLAYER *p)
 
 void gravaEquipas()
 {
-    FILE *fic = fopen("equipas.dat", "wb");
+    FILE *fic = fopen("equipas.dat", "wb"); // REESCREVER
     if (!fic)
     {
         printf("Erro ao abrir ficheiro para escrita.\n");
         return;
     }
 
+    // Gravar o número de equipas
     fwrite(&nTeams, sizeof(int), 1, fic);
 
+    // Gravar cada equipa + jogadores
     for (int i = 0; i < nTeams; i++)
     {
         TEAM *t = listaEquipas[i];
 
-        // Gravar equipa
         fwrite(t, sizeof(TEAM), 1, fic);
 
-        // Gravar cada jogador (NÃO os ponteiros)
         for (int j = 0; j < t->nPlayers; j++)
         {
             fwrite(t->players[j], sizeof(PLAYER), 1, fic);
@@ -156,6 +156,7 @@ void listar_equipas()
         return;
     }
 
+    // Ler número de equipas
     fread(&nTeams, sizeof(int), 1, fic);
 
     for (int i = 0; i < nTeams; i++)
@@ -163,7 +164,7 @@ void listar_equipas()
         TEAM *t = malloc(sizeof(TEAM));
         fread(t, sizeof(TEAM), 1, fic);
 
-        // reconstruir jogadores
+        // Reconstruir os jogadores
         for (int j = 0; j < t->nPlayers; j++)
         {
             PLAYER *p = malloc(sizeof(PLAYER));
@@ -173,7 +174,7 @@ void listar_equipas()
 
         listaEquipas[i] = t;
 
-        // Imprimir equipa
+        // Mostrar
         printf("\n=== EQUIPA %d ===\n", i + 1);
         printf("Nome: %s\n", t->name);
         printf("Jogadores: %d\n", t->nPlayers);
