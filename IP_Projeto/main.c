@@ -34,7 +34,7 @@ typedef struct team
 
 TEAM *listaEquipas[100]; // até 100 equipas
 int nTeams = 0;          // Controlar numero de equipas
-int nPlayers = 0;        // Controlar numero de atletas
+int nPlayers = 0;        // Controlar numero de atl
 
 /* ---- Funções do programa ---- */
 /* ---- 1. Listar equipa ---- */
