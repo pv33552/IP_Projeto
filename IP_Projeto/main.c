@@ -20,7 +20,7 @@ typedef struct player
     char name[100];
     int num_id;
     int year;
-    POSITION position;                                  // posicao a que joga --- Como juntar o enum????
+    POSITION position;                                  // posicao a que joga --- Juntar o enum
     float mPontos, mRemates, mPerdas, mAssist, mFintas; // para as estatisticas
     int tMinutos;
 } PLAYER;
@@ -34,17 +34,152 @@ typedef struct team
 
 TEAM *listaEquipas[100]; // até 100 equipas
 int nTeams = 0;          // Controlar numero de equipas
-int nPlayers = 0;        // Controlar numero de atl
+int nPlayers = 0;        // Controlar numero de atletas
 
 /* ---- Funções do programa ---- */
+
+/* ---- Funcoes Auxiliares ---- */
+void criaOuLeFicheiroEquipas(TEAM *t)
+{
+    FILE *fic;
+    char *nome = "equipas.dat";
+
+    // Verificar se o ficheiro já existe (tentar ler)
+    fic = fopen(nome, "rb");
+    if (fic != NULL)
+    {
+        // Já existe → ler do ficheiro
+        printf("O ficheiro '%s' existe. A ler dados...\n", nome);
+
+        size_t lidos = fread(t, sizeof(TEAM), 1, fic);
+        if (lidos != 1)
+        {
+            printf("Dados lidos com sucesso.\n");
+        }
+        else
+        {
+            printf("Erro ao ler o ficheiro.\n");
+        }
+
+        fclose(fic);
+        return;
+    }
+
+    // Se não existe → criar e escrever
+    fic = fopen(nome, "wb");
+    if (fic == NULL)
+    {
+        fprintf(stderr, "\nImpossivel criar o ficheiro.\n");
+        return;
+    }
+
+    fwrite(t, sizeof(TEAM), 1, fic);
+    fclose(fic);
+    printf("Ficheiro '%s' criado e escrito com sucesso.\n", nome);
+}
+
+void criaOuLeFicheiroJogadores(PLAYER *p)
+{
+    PLAYER *fic;
+    char *nome = "jogadores.dat";
+
+    // Verificar se o ficheiro já existe (tentar ler)
+    fic = fopen(nome, "rb");
+    if (fic != NULL)
+    {
+        // Já existe → ler do ficheiro
+        printf("O ficheiro '%s' existe. A ler dados...\n", nome);
+
+        size_t lidos = fread(p, sizeof(PLAYER), 1, fic);
+        if (lidos != 1)
+        {
+            printf("Dados lidos com sucesso.\n");
+        }
+        else
+        {
+            printf("Erro ao ler o ficheiro.\n");
+        }
+
+        fclose(fic);
+        return;
+    }
+
+    // Se não existe → criar e escrever
+    fic = fopen(nome, "wb");
+    if (fic == NULL)
+    {
+        fprintf(stderr, "\nImpossivel criar o ficheiro.\n");
+        return;
+    }
+
+    fwrite(p, sizeof(PLAYER), 1, fic);
+    fclose(fic);
+    printf("Ficheiro '%s' criado e escrito com sucesso.\n", nome);
+}
+
+void gravaEquipas()
+{
+    FILE *fic = fopen("equipas.dat", "wb");
+    if (!fic)
+    {
+        printf("Erro ao abrir ficheiro para escrita.\n");
+        return;
+    }
+
+    fwrite(&nTeams, sizeof(int), 1, fic);
+
+    for (int i = 0; i < nTeams; i++)
+    {
+        TEAM *t = listaEquipas[i];
+
+        // Gravar equipa
+        fwrite(t, sizeof(TEAM), 1, fic);
+
+        // Gravar cada jogador (NÃO os ponteiros)
+        for (int j = 0; j < t->nPlayers; j++)
+        {
+            fwrite(t->players[j], sizeof(PLAYER), 1, fic);
+        }
+    }
+
+    fclose(fic);
+    printf("Equipas gravadas com sucesso.\n");
+}
+
 /* ---- 1. Listar equipa ---- */
 void listar_equipas()
 {
-    printf("\nMostrar equipas registadas: \n");
+    FILE *fic = fopen("equipas.dat", "rb");
+    if (!fic)
+    {
+        printf("Ficheiro ainda não existe.\n");
+        return;
+    }
+
+    fread(&nTeams, sizeof(int), 1, fic);
+
     for (int i = 0; i < nTeams; i++)
     {
-        printf("\tNome da equipa: %s\n", listaEquipas[i]->name);
+        TEAM *t = malloc(sizeof(TEAM));
+        fread(t, sizeof(TEAM), 1, fic);
+
+        // reconstruir jogadores
+        for (int j = 0; j < t->nPlayers; j++)
+        {
+            PLAYER *p = malloc(sizeof(PLAYER));
+            fread(p, sizeof(PLAYER), 1, fic);
+            t->players[j] = p;
+        }
+
+        listaEquipas[i] = t;
+
+        // Imprimir equipa
+        printf("\n=== EQUIPA %d ===\n", i + 1);
+        printf("Nome: %s\n", t->name);
+        printf("Jogadores: %d\n", t->nPlayers);
     }
+
+    fclose(fic);
 }
 
 /* ---- 2. Funcoes de registar equipa ---- */
@@ -75,10 +210,12 @@ TEAM *registar_equipa()
 
         printf("\nA equipa %s foi registada com sucesso.\n", t->name);
 
+        // Gravar as equipas no ficheiro
+        gravaEquipas();
+
         return t;
     }
 }
-
 
 /* ---- *************. Pesquisar atletas OU equipas por valia  ----  */
 // Calcular a valia primeiro
@@ -101,8 +238,6 @@ float calcular_valia(PLAYER *p)
         return 0;
     }
 }
-
-
 
 /* ---- 3. Calcular valida da eequipa ----- */
 // Calcula a valia total de uma equipa usando a função calcular_valia para cada jogador
@@ -151,9 +286,11 @@ void adicionar_jogador(TEAM *t)
     }
 
     printf("\nIntroduza o numero de identificacao do atleta (7 digitos): ");
+    // adicionar validação
     scanf("%d", &p->num_id);
 
     printf("\nIntroduza o ano de nascimento do atleta: ");
+    // adicionar validação
     scanf("%d", &p->year);
 
     printf("\nIntroduza a posicao do atleta (0 - PONTA, 1 - LATERAL, 2 - CENTRAL, 3 - PIVO, 4 - GR): ");
@@ -182,14 +319,91 @@ void adicionar_jogador(TEAM *t)
     // guardar na equipa
     t->players[t->nPlayers] = p;
     t->nPlayers++;
+
+    printf("\nO atleta %s foi adicionado à equipa %s com sucesso.\n", p->name, t->name);
+
+    // Gravar jogador no ficheiro "jogadores.dat" (modo append)
+    FILE *fic = fopen("jogadores.dat", "ab");
+    if (!fic)
+    {
+        printf("Erro ao abrir 'jogadores.dat' para escrita.\n");
+        return;
+    }
+
+    fwrite(p, sizeof(PLAYER), 1, fic);
+    fclose(fic);
+
+    printf("Atleta %s gravado no ficheiro 'jogadores.dat'.\n", p->name);
 }
+
+/* ---- 2.2 Listar jogadores ----- */
+
+void listar_jogadores()
+{
+    FILE *fic = fopen("jogadores.dat", "rb");
+    if (!fic)
+    {
+        printf("O ficheiro 'jogadores.dat' não existe.\n");
+        return;
+    }
+
+    PLAYER temp;
+    int count = 0;
+    printf("\n=== Lista de Jogadores ===\n");
+
+    while (fread(&temp, sizeof(PLAYER), 1, fic) == 1)
+    {
+        printf("\nJogador %d:\n", count + 1);
+        printf("Nome: %s\n", temp.name);
+        printf("ID: %d\n", temp.num_id);
+        printf("Ano de nascimento: %d\n", temp.year);
+
+        // Converter enum para string
+        char *posicao;
+        switch (temp.position)
+        {
+        case PONTA:
+            posicao = "PONTA";
+            break;
+        case LATERAL:
+            posicao = "LATERAL";
+            break;
+        case CENTRAL:
+            posicao = "CENTRAL";
+            break;
+        case PIVO:
+            posicao = "PIVO";
+            break;
+        case GR:
+            posicao = "GR";
+            break;
+        default:
+            posicao = "Desconhecida";
+            break;
+        }
+        printf("Posicao: %s\n", posicao);
+        printf("Estatisticas: Pontos=%.1f, Remates=%.1f, Perdas=%.1f, Assist=%.1f, Fintas=%.1f, Minutos=%d\n",
+               temp.mPontos, temp.mRemates, temp.mPerdas, temp.mAssist, temp.mFintas, temp.tMinutos);
+
+        count++;
+    }
+
+    if (count == 0)
+    {
+        printf("Não há jogadores gravados.\n");
+    }
+
+    fclose(fic);
+}
+
+/* ---- 2.3 Ranking de jogadores ----- */
 
 ///////////////////////////////////////////////////
 char menu_principal()
 {
     char op;
 
-    printf("\nMenu de opcoes:\n");
+    printf("\n **** Menu de opcoes ****    \n");
     printf("#-------------------------#\n");
     printf("| 1 - Gestao de equipas   |\n");
     printf("| 2 - Gestao de jogadores |\n");
@@ -243,7 +457,11 @@ int main()
     char op;
 
     printf("\nBem-vindo ao programa de gestao de estatisticas de ANDEBOL!\n");
+    TEAM tempTeam = {0};
+    PLAYER tempPlayer = {0};
 
+    criaOuLeFicheiroEquipas(&tempTeam);
+    criaOuLeFicheiroJogadores(&tempPlayer);
     do
     {
 
@@ -273,18 +491,18 @@ int main()
                     printf("Escolha a equipa para calcular a valia: ");
                     int idx;
                     scanf("%d", &idx);
-        
+
                     if (idx < 0 || idx >= nTeams)
                     {
                         printf("Equipa inválida!\n");
                         break;
                     }
-        
+
                     float valia = calcular_valia_equipa(listaEquipas[idx]);
                     printf("\nA valia total da equipa %s é: %.2f\n", listaEquipas[idx]->name, valia);
                     break;
                 }
-                    break;
+                break;
                 case '4':
                     break;
                 }
@@ -325,7 +543,7 @@ int main()
                         break;
                     }
                 case '2':
-                    /* listar_jogadores(); */
+                    listar_jogadores();
                     break;
                 case '3':
                     /* ranking_jogadores(); */
