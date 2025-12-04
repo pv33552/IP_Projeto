@@ -207,7 +207,6 @@ void listar_equipas()
     }
 }
 
-
 /* ---- 1.1 Remover equipa ---- */
 
 void remover_equipa(int idx)
@@ -393,6 +392,7 @@ void adicionar_jogador(TEAM *t)
     // guardar na equipa
     t->players[t->nPlayers] = p;
     t->nPlayers++;
+    gravaEquipas();
 
     printf("\nO atleta %s foi adicionado à equipa %s com sucesso.\n", p->name, t->name);
 
@@ -525,6 +525,35 @@ char menu_gestao_jogadores()
 
 ///////////////////////////////////////////////////
 
+void carregarEquipas()
+{
+    FILE *fic = fopen("equipas.dat", "rb");
+    if (!fic)
+    {
+        nTeams = 0;
+        return;
+    }
+
+    fread(&nTeams, sizeof(int), 1, fic);
+
+    for (int i = 0; i < nTeams; i++)
+    {
+        TEAM *t = malloc(sizeof(TEAM));
+        fread(t, sizeof(TEAM), 1, fic);
+
+        for (int j = 0; j < t->nPlayers; j++)
+        {
+            PLAYER *p = malloc(sizeof(PLAYER));
+            fread(p, sizeof(PLAYER), 1, fic);
+            t->players[j] = p;
+        }
+
+        listaEquipas[i] = t;
+    }
+
+    fclose(fic);
+}
+
 int main()
 {
 
@@ -594,6 +623,9 @@ int main()
                 switch (opc2)
                 {
                 case '1':
+                    carregarEquipas();
+                    listar_equipas();
+
                     printf("\nEquipas disponiveis: \n");
 
                     for (int i = 0; i < nTeams; i++)
