@@ -152,7 +152,7 @@ void listar_equipas()
     FILE *fic = fopen("equipas.dat", "rb");
     if (!fic)
     {
-        printf("Ficheiro ainda não existe.\n");
+        printf("Ficheiro ainda nao existe.\n");
         return;
     }
 
@@ -189,13 +189,13 @@ void listar_equipas()
 
     if (opc == 1)
     {
-        printf("\nIntroduza o índice da equipa a remover: ");
+        printf("\nIntroduza o indice da equipa a remover: ");
         int idx;
         scanf("%d", &idx);
 
         if (idx < 0 || idx >= nTeams)
         {
-            printf("Índice invalido. Nada removido.\n");
+            printf("Indice invalido. Nenhuma equipa removida.\n");
             return;
         }
 
@@ -318,7 +318,7 @@ float calcular_valia_equipa(TEAM *t)
 {
     if (!t || t->nPlayers == 0)
     {
-        printf("\nA equipa não tem jogadores.\n");
+        printf("\nA equipa nao tem jogadores inscritos.\n");
         return 0.0;
     }
 
@@ -464,13 +464,70 @@ void listar_jogadores()
 
     if (count == 0)
     {
-        printf("Não há jogadores gravados.\n");
+        printf("Nao ha jogadores gravados.\n");
     }
 
     fclose(fic);
 }
 
 /* ---- 2.3 Ranking de jogadores ----- */
+void calcular_valia_jogador_escolhido(TEAM **listaEquipas, int nTeams)
+{
+    if (nTeams == 0)
+    {
+        printf("\nNao existem equipas carregadas.\n");
+        return;
+    }
+
+    printf("\n===== LISTA DE EQUIPAS =====\n");
+    for (int i = 0; i < nTeams; i++)
+    {
+        printf("%d - %s (%d jogadores)\n",
+               i, listaEquipas[i]->name, listaEquipas[i]->nPlayers);
+    }
+
+    int idE;
+    printf("\nEscolha a equipa (ou -1 para voltar): ");
+    scanf("%d", &idE);
+
+    if (idE == -1)
+        return;
+
+    if (idE < 0 || idE >= nTeams)
+    {
+        printf("\nEquipa invalida!\n");
+        return;
+    }
+
+    TEAM *t = listaEquipas[idE];
+
+    if (t->nPlayers == 0)
+    {
+        printf("\nA equipa '%s' nao tem jogadores!\n", t->name);
+        return;
+    }
+
+    printf("\n===== JOGADORES DA EQUIPA %s =====\n", t->name);
+    for (int i = 0; i < t->nPlayers; i++)
+    {
+        printf("%d - %s\n", i, t->players[i]->name);
+    }
+
+    int idJ;
+    printf("\nEscolha o jogador: ");
+    scanf("%d", &idJ);
+
+    if (idJ < 0 || idJ >= t->nPlayers)
+    {
+        printf("\nJogador invalido!\n");
+        return;
+    }
+
+    PLAYER *p = t->players[idJ];
+    float valia = calcular_valia(p);
+
+    printf("\nValia do jogador %s: %.2f\n", p->name, valia);
+}
 
 ///////////////////////////////////////////////////
 char menu_principal()
@@ -597,12 +654,12 @@ int main()
 
                     if (idx < 0 || idx >= nTeams)
                     {
-                        printf("Equipa inválida!\n");
+                        printf("Equipa invalida!\n");
                         break;
                     }
 
                     float valia = calcular_valia_equipa(listaEquipas[idx]);
-                    printf("\nA valia total da equipa %s é: %.2f\n", listaEquipas[idx]->name, valia);
+                    printf("\nA valia total da equipa %s e: %.2f\n", listaEquipas[idx]->name, valia);
                     break;
                 }
                 break;
@@ -652,7 +709,8 @@ int main()
                     listar_jogadores();
                     break;
                 case '3':
-                    /* ranking_jogadores(); */
+                    carregarEquipas();
+                    calcular_valia_jogador_escolhido(listaEquipas, nTeams);
                     break;
                 case '4':
                     break;
