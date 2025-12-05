@@ -147,6 +147,7 @@ void gravaEquipas()
 }
 
 /* ---- 1. Listar equipa ---- */
+/* ---- 1. Listar equipas ---- */
 void listar_equipas()
 {
     FILE *fic = fopen("equipas.dat", "rb");
@@ -178,33 +179,6 @@ void listar_equipas()
     }
 
     fclose(fic);
-
-    printf("\nO que pretende fazer?\n");
-    printf("1 - Remover uma equipa\n");
-    printf("2 - Voltar atras\n");
-    printf("Escolha: ");
-
-    int opc;
-    scanf("%d", &opc);
-
-    if (opc == 1)
-    {
-        printf("\nIntroduza o indice da equipa a remover: ");
-        int idx;
-        scanf("%d", &idx);
-
-        if (idx < 0 || idx >= nTeams)
-        {
-            printf("Indice invalido. Nenhuma equipa removida.\n");
-            return;
-        }
-
-        remover_equipa(idx);
-    }
-    else
-    {
-        printf("A voltar ao menu.\n");
-    }
 }
 
 /* ---- 1.1 Remover equipa ---- */
@@ -513,7 +487,6 @@ void atualizar_jogador(int index)
     printf("\nJogador atualizado com sucesso!\n");
 }
 
-
 void listar_jogadores()
 {
     FILE *fic = fopen("jogadores.dat", "rb");
@@ -538,12 +511,24 @@ void listar_jogadores()
         char *posicao;
         switch (temp.position)
         {
-        case PONTA:   posicao = "PONTA"; break;
-        case LATERAL: posicao = "LATERAL"; break;
-        case CENTRAL: posicao = "CENTRAL"; break;
-        case PIVO:    posicao = "PIVO"; break;
-        case GR:      posicao = "GR"; break;
-        default:      posicao = "Desconhecida"; break;
+        case PONTA:
+            posicao = "PONTA";
+            break;
+        case LATERAL:
+            posicao = "LATERAL";
+            break;
+        case CENTRAL:
+            posicao = "CENTRAL";
+            break;
+        case PIVO:
+            posicao = "PIVO";
+            break;
+        case GR:
+            posicao = "GR";
+            break;
+        default:
+            posicao = "Desconhecida";
+            break;
         }
 
         printf("Posicao: %s\n", posicao);
@@ -582,7 +567,6 @@ void listar_jogadores()
         atualizar_jogador(idx - 1); // converter para índice base 0
     }
 }
-
 
 /* ---- 2.3 Ranking de jogadores ----- */
 void calcular_valia_jogador_escolhido(TEAM **listaEquipas, int nTeams)
@@ -755,6 +739,18 @@ int main()
                 {
                 case '1':
                     listar_equipas();
+                    printf("\nDeseja remover uma equipa? (S/N): ");
+                    char r;
+                    scanf(" %c", &r);
+
+                    if (r == 'S' || r == 's')
+                    {
+                        printf("Introduza o índice da equipa que pretende remover: ");
+                        int idx;
+                        scanf("%d", &idx);
+
+                        remover_equipa(idx);
+                    }
                     break;
                 case '2':
                     registar_equipa();
