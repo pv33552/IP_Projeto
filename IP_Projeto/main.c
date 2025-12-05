@@ -411,6 +411,108 @@ void adicionar_jogador(TEAM *t)
 }
 
 /* ---- 2.2 Listar jogadores ----- */
+void remover_jogador(int index)
+{
+    FILE *fic = fopen("jogadores.dat", "rb");
+    if (!fic)
+    {
+        printf("\nErro ao abrir jogadores.dat\n");
+        return;
+    }
+
+    FILE *temp = fopen("temp.dat", "wb");
+    if (!temp)
+    {
+        printf("\nErro ao criar temp.dat\n");
+        fclose(fic);
+        return;
+    }
+
+    PLAYER p;
+    int i = 0;
+
+    // Copiar todos menos o jogador a remover
+    while (fread(&p, sizeof(PLAYER), 1, fic) == 1)
+    {
+        if (i != index)
+            fwrite(&p, sizeof(PLAYER), 1, temp);
+
+        i++;
+    }
+
+    fclose(fic);
+    fclose(temp);
+
+    // Substituir ficheiro original pelo ficheiro temporário
+    remove("jogadores.dat");
+    rename("temp.dat", "jogadores.dat");
+
+    printf("\nJogador removido com sucesso!\n");
+}
+
+void atualizar_jogador(int index)
+{
+    FILE *fic = fopen("jogadores.dat", "rb+");
+    if (!fic)
+    {
+        printf("Erro ao abrir o ficheiro jogadores.dat\n");
+        return;
+    }
+
+    PLAYER p;
+
+    // Ir buscar o jogador desejado
+    fseek(fic, index * sizeof(PLAYER), SEEK_SET);
+    fread(&p, sizeof(PLAYER), 1, fic);
+
+    printf("\n=== Gestao do Jogador: %s ===\n", p.name);
+    printf("1 - Atualizar informacao\n");
+    printf("2 - Eliminar jogador\n");
+    printf("3 - Voltar atras\n");
+    printf("Escolha uma opcao: ");
+
+    int opc;
+    scanf("%d", &opc);
+
+    if (opc == 3)
+    {
+        fclose(fic);
+        printf("\nOperacao cancelada.\n");
+        return;
+    }
+
+    if (opc == 2)
+    {
+        fclose(fic); // Fechar antes de remover
+        remover_jogador(index);
+        return;
+    }
+
+    // ---- Atualização de dados ----
+    getchar(); // limpar buffer
+
+    printf("\nNovo nome (ENTER mantem nome actual): ");
+    char novoNome[50];
+    fgets(novoNome, sizeof(novoNome), stdin);
+    if (novoNome[0] != '\n')
+    {
+        novoNome[strcspn(novoNome, "\n")] = 0;
+        strcpy(p.name, novoNome);
+    }
+
+    printf("Novo ano nascimento (%d): ", p.year);
+    int ano;
+    if (scanf("%d", &ano) == 1)
+        p.year = ano;
+
+    // Guardar no mesmo sítio
+    fseek(fic, index * sizeof(PLAYER), SEEK_SET);
+    fwrite(&p, sizeof(PLAYER), 1, fic);
+
+    fclose(fic);
+    printf("\nJogador atualizado com sucesso!\n");
+}
+
 
 void listar_jogadores()
 {
@@ -423,6 +525,7 @@ void listar_jogadores()
 
     PLAYER temp;
     int count = 0;
+
     printf("\n=== Lista de Jogadores ===\n");
 
     while (fread(&temp, sizeof(PLAYER), 1, fic) == 1)
@@ -432,43 +535,54 @@ void listar_jogadores()
         printf("ID: %d\n", temp.num_id);
         printf("Ano de nascimento: %d\n", temp.year);
 
-        // Converter enum para string
         char *posicao;
         switch (temp.position)
         {
-        case PONTA:
-            posicao = "PONTA";
-            break;
-        case LATERAL:
-            posicao = "LATERAL";
-            break;
-        case CENTRAL:
-            posicao = "CENTRAL";
-            break;
-        case PIVO:
-            posicao = "PIVO";
-            break;
-        case GR:
-            posicao = "GR";
-            break;
-        default:
-            posicao = "Desconhecida";
-            break;
+        case PONTA:   posicao = "PONTA"; break;
+        case LATERAL: posicao = "LATERAL"; break;
+        case CENTRAL: posicao = "CENTRAL"; break;
+        case PIVO:    posicao = "PIVO"; break;
+        case GR:      posicao = "GR"; break;
+        default:      posicao = "Desconhecida"; break;
         }
+
         printf("Posicao: %s\n", posicao);
         printf("Estatisticas: Pontos=%.1f, Remates=%.1f, Perdas=%.1f, Assist=%.1f, Fintas=%.1f, Minutos=%d\n",
-               temp.mPontos, temp.mRemates, temp.mPerdas, temp.mAssist, temp.mFintas, temp.tMinutos);
+               temp.mPontos, temp.mRemates, temp.mPerdas,
+               temp.mAssist, temp.mFintas, temp.tMinutos);
 
         count++;
     }
 
+    fclose(fic);
+
     if (count == 0)
     {
         printf("Nao ha jogadores gravados.\n");
+        return;
     }
 
-    fclose(fic);
+    // Perguntar ao utilizador se quer atualizar alguém
+    char opc;
+    printf("\nDeseja atualizar informacao de um atleta? (S/N): ");
+    scanf(" %c", &opc);
+
+    if (opc == 'S' || opc == 's')
+    {
+        int idx;
+        printf("\nEscolha o numero do jogador a atualizar (1 a %d): ", count);
+        scanf("%d", &idx);
+
+        if (idx < 1 || idx > count)
+        {
+            printf("Indice invalido.\n");
+            return;
+        }
+
+        atualizar_jogador(idx - 1); // converter para índice base 0
+    }
 }
+
 
 /* ---- 2.3 Ranking de jogadores ----- */
 void calcular_valia_jogador_escolhido(TEAM **listaEquipas, int nTeams)
