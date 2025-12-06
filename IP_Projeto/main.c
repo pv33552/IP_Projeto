@@ -48,24 +48,24 @@ void criaOuLeFicheiroEquipas(TEAM *t)
     fic = fopen(nome, "rb");
     if (fic != NULL)
     {
-        // Já existe → ler do ficheiro
+        // Já existe, ler do ficheiro
         printf("O ficheiro '%s' existe. A ler dados...\n", nome);
 
         size_t lidos = fread(t, sizeof(TEAM), 1, fic);
         if (lidos != 1)
         {
-            printf("Dados lidos com sucesso.\n");
+            printf("Erro ao ler o ficheiro.\n");
         }
         else
         {
-            printf("Erro ao ler o ficheiro.\n");
+            printf("Dados lidos com sucesso.\n");
         }
 
         fclose(fic);
         return;
     }
 
-    // Se não existe → criar e escrever
+    // Se não existe, criar e escrever
     fic = fopen(nome, "wb");
     if (fic == NULL)
     {
@@ -87,24 +87,24 @@ void criaOuLeFicheiroJogadores(PLAYER *p)
     fic = fopen(nome, "rb");
     if (fic != NULL)
     {
-        // Já existe → ler do ficheiro
+        // Já existe, ler do ficheiro
         printf("O ficheiro '%s' existe. A ler dados...\n", nome);
 
         size_t lidos = fread(p, sizeof(PLAYER), 1, fic);
         if (lidos != 1)
         {
-            printf("Dados lidos com sucesso.\n");
+            printf("Erro ao ler o ficheiro.\n");
         }
         else
         {
-            printf("Erro ao ler o ficheiro.\n");
+            printf("Dados lidos com sucesso.\n");
         }
 
         fclose(fic);
         return;
     }
 
-    // Se não existe → criar e escrever
+    // Se não existe, criar e escrever
     fic = fopen(nome, "wb");
     if (fic == NULL)
     {
@@ -147,7 +147,6 @@ void gravaEquipas()
 }
 
 /* ---- 1. Listar equipa ---- */
-/* ---- 1. Listar equipas ---- */
 void listar_equipas()
 {
     FILE *fic = fopen("equipas.dat", "rb");
@@ -159,7 +158,7 @@ void listar_equipas()
 
     fread(&nTeams, sizeof(int), 1, fic);
 
-    printf("\n=== LISTA DE EQUIPAS ===\n");
+    printf("\n**** LISTA DE EQUIPAS ****\n");
 
     for (int i = 0; i < nTeams; i++)
     {
@@ -182,7 +181,6 @@ void listar_equipas()
 }
 
 /* ---- 1.1 Remover equipa ---- */
-
 void remover_equipa(int idx)
 {
     if (idx < 0 || idx >= nTeams)
@@ -439,7 +437,7 @@ void atualizar_jogador(int index)
     fseek(fic, index * sizeof(PLAYER), SEEK_SET);
     fread(&p, sizeof(PLAYER), 1, fic);
 
-    printf("\n=== Gestao do Jogador: %s ===\n", p.name);
+    printf("\n**** Gestao do Jogador: %s ****\n", p.name);
     printf("1 - Atualizar informacao\n");
     printf("2 - Eliminar jogador\n");
     printf("3 - Voltar atras\n");
@@ -499,7 +497,7 @@ void listar_jogadores()
     PLAYER temp;
     int count = 0;
 
-    printf("\n=== Lista de Jogadores ===\n");
+    printf("\n**** Lista de Jogadores ****\n");
 
     while (fread(&temp, sizeof(PLAYER), 1, fic) == 1)
     {
@@ -745,7 +743,7 @@ int main()
 
                     if (r == 'S' || r == 's')
                     {
-                        printf("Introduza o índice da equipa que pretende remover: ");
+                        printf("Introduza o indice da equipa que pretende remover: ");
                         int idx;
                         scanf("%d", &idx);
 
