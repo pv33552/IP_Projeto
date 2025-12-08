@@ -366,7 +366,7 @@ void adicionar_jogador(TEAM *t)
     t->nPlayers++;
     gravaEquipas();
 
-    printf("\nO atleta %s foi adicionado à equipa %s com sucesso.\n", p->name, t->name);
+    printf("\nO atleta %s foi adicionado a equipa %s com sucesso.\n", p->name, t->name);
 
     // Gravar jogador no ficheiro "jogadores.dat" (modo append)
     FILE *fic = fopen("jogadores.dat", "ab");
@@ -388,14 +388,14 @@ void remover_jogador(int index)
     FILE *fic = fopen("jogadores.dat", "rb");
     if (!fic)
     {
-        printf("\nErro ao abrir jogadores.dat\n");
+        printf("\nErro ao abrir ficheiro\n");
         return;
     }
 
     FILE *temp = fopen("temp.dat", "wb");
     if (!temp)
     {
-        printf("\nErro ao criar temp.dat\n");
+        printf("\nErro ao criar ficheiro temporario\n"); // para copiar os dados e substituir o ficheiro original
         fclose(fic);
         return;
     }
@@ -427,13 +427,13 @@ void atualizar_jogador(int index)
     FILE *fic = fopen("jogadores.dat", "rb+");
     if (!fic)
     {
-        printf("Erro ao abrir o ficheiro jogadores.dat\n");
+        printf("Erro ao abrir o ficheiro.\n");
         return;
     }
 
     PLAYER p;
 
-    // Ir buscar o jogador desejado
+    // Selecionar o jogador pelo índice
     fseek(fic, index * sizeof(PLAYER), SEEK_SET);
     fread(&p, sizeof(PLAYER), 1, fic);
 
@@ -490,7 +490,7 @@ void listar_jogadores()
     FILE *fic = fopen("jogadores.dat", "rb");
     if (!fic)
     {
-        printf("O ficheiro 'jogadores.dat' não existe.\n");
+        printf("O ficheiro nao existe.\n");
         return;
     }
 
@@ -550,7 +550,7 @@ void listar_jogadores()
     printf("\nDeseja atualizar informacao de um atleta? (S/N): ");
     scanf(" %c", &opc);
 
-    if (opc == 'S' || opc == 's')
+    if (opc == 'S' || opc == 's') // 'S' ou 's'
     {
         int idx;
         printf("\nEscolha o numero do jogador a atualizar (1 a %d): ", count);
@@ -575,7 +575,7 @@ void calcular_valia_jogador_escolhido(TEAM **listaEquipas, int nTeams)
         return;
     }
 
-    printf("\n===== LISTA DE EQUIPAS =====\n");
+    printf("\n**** LISTA DE EQUIPAS ****\n");
     for (int i = 0; i < nTeams; i++)
     {
         printf("%d - %s (%d jogadores)\n",
@@ -603,7 +603,7 @@ void calcular_valia_jogador_escolhido(TEAM **listaEquipas, int nTeams)
         return;
     }
 
-    printf("\n===== JOGADORES DA EQUIPA %s =====\n", t->name);
+    printf("\n**** JOGADORES DA EQUIPA %s ****\n", t->name);
     for (int i = 0; i < t->nPlayers; i++)
     {
         printf("%d - %s\n", i, t->players[i]->name);
