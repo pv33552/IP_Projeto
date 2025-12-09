@@ -284,8 +284,6 @@ float calcular_valia(PLAYER *p)
     }
 }
 
-/* ---- 3. Calcular valida da eequipa ----- */
-// Calcula a valia total de uma equipa usando a função calcular_valia para cada jogador
 float calcular_valia_equipa(TEAM *t)
 {
     if (!t || t->nPlayers == 0)
@@ -298,11 +296,78 @@ float calcular_valia_equipa(TEAM *t)
     for (int i = 0; i < t->nPlayers; i++)
     {
         PLAYER *p = t->players[i];
-        valia_total += calcular_valia(p); // usa a função já criada
+        valia_total += calcular_valia(p); // chama a função de valia individual
     }
 
     return valia_total;
 }
+
+/**************************************** FALTA IMPLEMENTAR ******************************************************************* */
+void relatorio_valias(TEAM teams[], int nTeams)
+{
+    if (nTeams == 0)
+    {
+        printf("Nao ha equipas registadas.\n");
+        return;
+    }
+
+    TEAM *mais_valiosa = &teams[0];
+    TEAM *menos_valiosa = &teams[0];
+
+    // Estruturas para atletas mais valiosos por posicao
+    PLAYER *mais_valioso[5] = {NULL, NULL, NULL, NULL, NULL};
+    float valia_max[5] = {0, 0, 0, 0, 0};
+
+    for (int i = 0; i < nTeams; i++)
+    {
+        TEAM *t = &teams[i];
+        float valia_equipa = 0.0;
+
+        for (int j = 0; j < t->nPlayers; j++)
+        {
+            PLAYER *p = t->players[j];
+            float val = calcular_valia(p);
+            valia_equipa += val;
+
+            // Atualizar atleta mais valioso por posicao (>100 minutos)
+            if (p->tMinutos > 100 && val > valia_max[p->position])
+            {
+                valia_max[p->position] = val;
+                mais_valioso[p->position] = p;
+            }
+        }
+
+        printf("\nEquipa %s: Valia total = %.2f\n", t->name, valia_equipa);
+
+        // Atualizar equipa mais e menos valiosa
+        if (valia_equipa > calcular_valia_equipa(mais_valiosa))
+            mais_valiosa = t;
+        if (valia_equipa < calcular_valia_equipa(menos_valiosa))
+            menos_valiosa = t;
+    }
+
+    printf("\n*********** Relatorio de Valias **********\n");
+    printf("Equipa mais valiosa: %s\n", mais_valiosa->name);
+    printf("Equipa menos valiosa: %s\n", menos_valiosa->name);
+    printf("\n");
+
+    const char *posicoes[] = {"PONTA", "LATERAL", "CENTRAL", "PIVO", "GR"};
+
+    printf("\nAtletas mais valiosos por posicao (minutos > 100):\n");
+    for (int k = 0; k < 5; k++)
+    {
+        if (mais_valioso[k])
+            printf("%s: %s (Valia = %.2f, Minutos = %d)\n",
+                   posicoes[k],
+                   mais_valioso[k]->name,
+                   valia_max[k],
+                   mais_valioso[k]->tMinutos);
+        else
+            printf("%s: Nenhum atleta com mais de 100 minutos\n", posicoes[k]);
+    }
+    printf("\n");
+}
+
 
 /* ---- 2.1 Adicionar atletas a uma equipa ---- */
 void adicionar_jogador(TEAM *t)
@@ -314,10 +379,10 @@ void adicionar_jogador(TEAM *t)
     }
 
     PLAYER *p = malloc(sizeof(PLAYER));
-    if (p == NULL)
+    if (!p)
     {
         printf("Memoria insuficiente!\n");
-        return; // termina a funcao em caso de erro
+        return;
     }
 
     printf("\nIntroduza o nome do atleta: ");
@@ -325,61 +390,139 @@ void adicionar_jogador(TEAM *t)
 
     if (p->name[0] == '\0')
     {
-        printf("\nNome invalido, por favor introduza um nome valido.\n");
+        printf("\nNome invalido.\n");
         free(p);
         return;
     }
 
-    printf("\nIntroduza o numero de identificacao do atleta (7 digitos): ");
-    // adicionar validação
-    scanf("%d", &p->num_id);
-
-    printf("\nIntroduza o ano de nascimento do atleta: ");
-    // adicionar validação
-    scanf("%d", &p->year);
-
-    printf("\nIntroduza a posicao do atleta (0 - PONTA, 1 - LATERAL, 2 - CENTRAL, 3 - PIVO, 4 - GR): ");
-    int pos;
-    scanf("%d", &pos);
-
-    if (pos < 0 || pos > 4)
+    /* --------------------------
+       VALIDACAO 1: NUMERO ID (7 dígitos)
+       -------------------------- */
+    do
     {
-        printf("\nPosicao invalida, por favor introduza uma posicao valida.\n");
-        free(p);
-        return;
-    }
+        printf("\nIntroduza o numero de identificacao do atleta (7 digitos): ");
+        scanf("%d", &p->num_id);
 
-    printf("\nO atleta %s foi adicionado a equipa %s com sucesso.\n", p->name, t->name);
+        if (p->num_id < 0000000 || p->num_id > 9999999)
+            printf("Numero invalido! Tem de ter exatamente 7 digitos.\n");
+
+    } while (p->num_id < 0000000 || p->num_id > 9999999);
+
+    /* --------------------------
+       VALIDACAO 2: ANO DE NASCIMENTO
+       -------------------------- */
+    do
+    {
+        printf("\nIntroduza o ano de nascimento do atleta: ");
+        scanf("%d", &p->year);
+
+        if (p->year < 1950 || p->year > 2025)
+            printf("Ano invalido! Tem de estar entre 1950 e 2025.\n");
+
+    } while (p->year < 1950 || p->year > 2025);
+
+    /* --------------------------
+       VALIDACAO 3: POSICAO
+       -------------------------- */
+    int pos;
+    do
+    {
+        printf("\nIntroduza a posicao do atleta (0-PONTA, 1-LATERAL, 2-CENTRAL, 3-PIVO, 4-GR): ");
+        scanf("%d", &pos);
+
+        if (pos < 0 || pos > 4)
+            printf("Posicao invalida!\n");
+
+    } while (pos < 0 || pos > 4);
 
     p->position = (POSITION)pos;
 
-    // Para iniciar as estatisticas a zero de cada jogador inserido
-    p->mPontos = 0.0;
-    p->mRemates = 0.0;
-    p->mPerdas = 0.0;
-    p->mAssist = 0.0;
-    p->mFintas = 0.0;
-    p->tMinutos = 0;
+    /* ---- Estatísticas do jogador ---- */
 
-    // guardar na equipa
+    printf("\n**** Introduza as estatisticas do jogador ****\n");
+    
+    /* Pontos */
+    do {
+        printf("Pontos marcados: ");
+        scanf("%f", &p->mPontos);
+    
+        if (p->mPontos < 0)
+            printf("Valor invalido! Nao pode ser negativo.\n");
+    
+    } while (p->mPontos < 0);
+    
+    /* Remates */
+    do {
+        printf("Remates: ");
+        scanf("%f", &p->mRemates);
+    
+        if (p->mRemates < 0)
+            printf("Valor invalido!\n");
+    
+    } while (p->mRemates < 0);
+    
+    /* Perdas de bola */
+    do {
+        printf("Perdas de bola: ");
+        scanf("%f", &p->mPerdas);
+    
+        if (p->mPerdas < 0)
+            printf("Valor inválido!\n");
+    
+    } while (p->mPerdas < 0);
+    
+    /* Assistências */
+    do {
+        printf("Assistencias: ");
+        scanf("%f", &p->mAssist);
+    
+        if (p->mAssist < 0)
+            printf("Valor invalido!\n");
+    
+    } while (p->mAssist < 0);
+    
+    /* Fintas */
+    do {
+        printf("Fintas: ");
+        scanf("%f", &p->mFintas);
+    
+        if (p->mFintas < 0)
+            printf("Valor invalido!\n");
+    
+    } while (p->mFintas < 0);
+    
+    /* Minutos jogados */
+    do {
+        printf("Minutos jogados: ");
+        scanf("%d", &p->tMinutos);
+    
+        if (p->tMinutos < 0)
+            printf("Valor invalido!\n");
+    
+    } while (p->tMinutos < 0);
+    
+    printf("\nEstatisticas registadas com sucesso!\n");
+    
+
+    /* Guardar na equipa */
     t->players[t->nPlayers] = p;
     t->nPlayers++;
     gravaEquipas();
 
     printf("\nO atleta %s foi adicionado a equipa %s com sucesso.\n", p->name, t->name);
 
-    // Gravar jogador no ficheiro "jogadores.dat" (modo append)
+    /* Guardar no ficheiro */
     FILE *fic = fopen("jogadores.dat", "ab");
     if (!fic)
     {
-        printf("Erro ao abrir 'jogadores.dat' para escrita.\n");
+        printf("Erro ao abrir ficheiro jogadores.dat\n");
         return;
     }
 
     fwrite(p, sizeof(PLAYER), 1, fic);
     fclose(fic);
 
-    printf("Atleta %s gravado no ficheiro 'jogadores.dat'.\n", p->name);
+    printf("Atleta gravado no ficheiro.\n");
 }
 
 /* ---- 2.2 Listar jogadores ----- */
@@ -433,7 +576,6 @@ void atualizar_jogador(int index)
 
     PLAYER p;
 
-    // Selecionar o jogador pelo índice
     fseek(fic, index * sizeof(PLAYER), SEEK_SET);
     fread(&p, sizeof(PLAYER), 1, fic);
 
@@ -445,6 +587,7 @@ void atualizar_jogador(int index)
 
     int opc;
     scanf("%d", &opc);
+    getchar(); // limpar buffer
 
     if (opc == 3)
     {
@@ -455,35 +598,75 @@ void atualizar_jogador(int index)
 
     if (opc == 2)
     {
-        fclose(fic); // Fechar antes de remover
+        fclose(fic);
         remover_jogador(index);
         return;
     }
 
-    // ---- Atualização de dados ----
-    getchar(); // limpar buffer
-
-    printf("\nNovo nome (ENTER mantem nome actual): ");
-    char novoNome[50];
-    fgets(novoNome, sizeof(novoNome), stdin);
-    if (novoNome[0] != '\n')
+    printf("\nNovo nome (ENTER mantém '%s'): ", p.name);
+    char tmp[50];
+    fgets(tmp, sizeof(tmp), stdin);
+    if (tmp[0] != '\n')
     {
-        novoNome[strcspn(novoNome, "\n")] = 0;
-        strcpy(p.name, novoNome);
+        tmp[strcspn(tmp, "\n")] = 0;
+        strcpy(p.name, tmp);
     }
 
-    printf("Novo ano nascimento (%d): ", p.year);
-    int ano;
-    if (scanf("%d", &ano) == 1)
-        p.year = ano;
+    printf("Ano de nascimento (%d): ", p.year);
+    fgets(tmp, sizeof(tmp), stdin);
+    if (tmp[0] != '\n')
+    {
+        int novoAno = atoi(tmp);
+        if (novoAno >= 1950 && novoAno <= 2025)
+            p.year = novoAno;
+        else
+            printf("Ano invalido! Mantido: %d\n", p.year);
+    }
 
-    // Guardar no mesmo sítio
+    /* ================================
+       ATUALIZAÇÃO DAS ESTATÍSTICAS
+    ================================= */
+
+    printf("\n**** Atualizar Estatisticas ****\n");
+
+    printf("Pontos (%.1f): ", p.mPontos);
+    fgets(tmp, sizeof(tmp), stdin);
+    if (tmp[0] != '\n')
+        p.mPontos = atof(tmp); // conerter para inteiro
+
+    printf("Remates (%.1f): ", p.mRemates);
+    fgets(tmp, sizeof(tmp), stdin);
+    if (tmp[0] != '\n')
+        p.mRemates = atof(tmp); // conerter para inteiro
+
+    printf("Perdas (%.1f): ", p.mPerdas);
+    fgets(tmp, sizeof(tmp), stdin);
+    if (tmp[0] != '\n')
+        p.mPerdas = atof(tmp); // conerter para inteiro
+
+    printf("Assistencias (%.1f): ", p.mAssist);
+    fgets(tmp, sizeof(tmp), stdin);
+    if (tmp[0] != '\n')
+        p.mAssist = atof(tmp); // conerter para inteiro
+
+    printf("Fintas (%.1f): ", p.mFintas);
+    fgets(tmp, sizeof(tmp), stdin);
+    if (tmp[0] != '\n')
+        p.mFintas = atof(tmp); // conerter para inteiro
+
+    printf("Minutos (%d): ", p.tMinutos);
+    fgets(tmp, sizeof(tmp), stdin);
+    if (tmp[0] != '\n')
+        p.tMinutos = atoi(tmp); // conerter para inteiro
+
     fseek(fic, index * sizeof(PLAYER), SEEK_SET);
     fwrite(&p, sizeof(PLAYER), 1, fic);
 
     fclose(fic);
+
     printf("\nJogador atualizado com sucesso!\n");
 }
+
 
 void listar_jogadores()
 {
@@ -569,6 +752,8 @@ void listar_jogadores()
 /* ---- 2.3 Ranking de jogadores ----- */
 void calcular_valia_jogador_escolhido(TEAM **listaEquipas, int nTeams)
 {
+
+
     if (nTeams == 0)
     {
         printf("\nNao existem equipas carregadas.\n");
