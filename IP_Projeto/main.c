@@ -146,6 +146,35 @@ void gravaEquipas()
     printf("Equipas gravadas com sucesso.\n");
 }
 
+void carregarEquipas()
+{
+    FILE *fic = fopen("equipas.dat", "rb");
+    if (!fic)
+    {
+        nTeams = 0;
+        return;
+    }
+
+    fread(&nTeams, sizeof(int), 1, fic);
+
+    for (int i = 0; i < nTeams; i++)
+    {
+        TEAM *t = malloc(sizeof(TEAM));
+        fread(t, sizeof(TEAM), 1, fic);
+
+        for (int j = 0; j < t->nPlayers; j++)
+        {
+            PLAYER *p = malloc(sizeof(PLAYER));
+            fread(p, sizeof(PLAYER), 1, fic);
+            t->players[j] = p;
+        }
+
+        listaEquipas[i] = t;
+    }
+
+    fclose(fic);
+}
+
 /* ---- 1. Listar equipa ---- */
 void listar_equipas()
 {
@@ -1076,35 +1105,6 @@ char menu_gestao_jogadores()
 }
 
 ///////////////////////////////////////////////////
-
-void carregarEquipas()
-{
-    FILE *fic = fopen("equipas.dat", "rb");
-    if (!fic)
-    {
-        nTeams = 0;
-        return;
-    }
-
-    fread(&nTeams, sizeof(int), 1, fic);
-
-    for (int i = 0; i < nTeams; i++)
-    {
-        TEAM *t = malloc(sizeof(TEAM));
-        fread(t, sizeof(TEAM), 1, fic);
-
-        for (int j = 0; j < t->nPlayers; j++)
-        {
-            PLAYER *p = malloc(sizeof(PLAYER));
-            fread(p, sizeof(PLAYER), 1, fic);
-            t->players[j] = p;
-        }
-
-        listaEquipas[i] = t;
-    }
-
-    fclose(fic);
-}
 
 int main()
 {
