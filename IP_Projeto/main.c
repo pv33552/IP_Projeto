@@ -80,7 +80,7 @@ void criaOuLeFicheiroEquipas(TEAM *t)
 
 void criaOuLeFicheiroJogadores(PLAYER *p)
 {
-    PLAYER *fic;
+    FILE *fic;
     char *nome = "jogadores.dat";
 
     // Verificar se o ficheiro já existe (tentar ler)
@@ -302,73 +302,6 @@ float calcular_valia_equipa(TEAM *t)
     return valia_total;
 }
 
-/**************************************** FALTA IMPLEMENTAR ******************************************************************* */
-void relatorio_valias(TEAM teams[], int nTeams)
-{
-    if (nTeams == 0)
-    {
-        printf("Nao ha equipas registadas.\n");
-        return;
-    }
-
-    TEAM *mais_valiosa = &teams[0];
-    TEAM *menos_valiosa = &teams[0];
-
-    // Estruturas para atletas mais valiosos por posicao
-    PLAYER *mais_valioso[5] = {NULL, NULL, NULL, NULL, NULL};
-    float valia_max[5] = {0, 0, 0, 0, 0};
-
-    for (int i = 0; i < nTeams; i++)
-    {
-        TEAM *t = &teams[i];
-        float valia_equipa = 0.0;
-
-        for (int j = 0; j < t->nPlayers; j++)
-        {
-            PLAYER *p = t->players[j];
-            float val = calcular_valia(p);
-            valia_equipa += val;
-
-            // Atualizar atleta mais valioso por posicao (>100 minutos)
-            if (p->tMinutos > 100 && val > valia_max[p->position])
-            {
-                valia_max[p->position] = val;
-                mais_valioso[p->position] = p;
-            }
-        }
-
-        printf("\nEquipa %s: Valia total = %.2f\n", t->name, valia_equipa);
-
-        // Atualizar equipa mais e menos valiosa
-        if (valia_equipa > calcular_valia_equipa(mais_valiosa))
-            mais_valiosa = t;
-        if (valia_equipa < calcular_valia_equipa(menos_valiosa))
-            menos_valiosa = t;
-    }
-
-    printf("\n*********** Relatorio de Valias **********\n");
-    printf("Equipa mais valiosa: %s\n", mais_valiosa->name);
-    printf("Equipa menos valiosa: %s\n", menos_valiosa->name);
-    printf("\n");
-
-    const char *posicoes[] = {"PONTA", "LATERAL", "CENTRAL", "PIVO", "GR"};
-
-    printf("\nAtletas mais valiosos por posicao (minutos > 100):\n");
-    for (int k = 0; k < 5; k++)
-    {
-        if (mais_valioso[k])
-            printf("%s: %s (Valia = %.2f, Minutos = %d)\n",
-                   posicoes[k],
-                   mais_valioso[k]->name,
-                   valia_max[k],
-                   mais_valioso[k]->tMinutos);
-        else
-            printf("%s: Nenhum atleta com mais de 100 minutos\n", posicoes[k]);
-    }
-    printf("\n");
-}
-
-
 /* ---- 2.1 Adicionar atletas a uma equipa ---- */
 void adicionar_jogador(TEAM *t)
 {
@@ -440,69 +373,74 @@ void adicionar_jogador(TEAM *t)
     /* ---- Estatísticas do jogador ---- */
 
     printf("\n**** Introduza as estatisticas do jogador ****\n");
-    
+
     /* Pontos */
-    do {
+    do
+    {
         printf("Pontos marcados: ");
         scanf("%f", &p->mPontos);
-    
+
         if (p->mPontos < 0)
             printf("Valor invalido! Nao pode ser negativo.\n");
-    
+
     } while (p->mPontos < 0);
-    
+
     /* Remates */
-    do {
+    do
+    {
         printf("Remates: ");
         scanf("%f", &p->mRemates);
-    
+
         if (p->mRemates < 0)
             printf("Valor invalido!\n");
-    
+
     } while (p->mRemates < 0);
-    
+
     /* Perdas de bola */
-    do {
+    do
+    {
         printf("Perdas de bola: ");
         scanf("%f", &p->mPerdas);
-    
+
         if (p->mPerdas < 0)
             printf("Valor inválido!\n");
-    
+
     } while (p->mPerdas < 0);
-    
+
     /* Assistências */
-    do {
+    do
+    {
         printf("Assistencias: ");
         scanf("%f", &p->mAssist);
-    
+
         if (p->mAssist < 0)
             printf("Valor invalido!\n");
-    
+
     } while (p->mAssist < 0);
-    
+
     /* Fintas */
-    do {
+    do
+    {
         printf("Fintas: ");
         scanf("%f", &p->mFintas);
-    
+
         if (p->mFintas < 0)
             printf("Valor invalido!\n");
-    
+
     } while (p->mFintas < 0);
-    
+
     /* Minutos jogados */
-    do {
+    do
+    {
         printf("Minutos jogados: ");
         scanf("%d", &p->tMinutos);
-    
+
         if (p->tMinutos < 0)
             printf("Valor invalido!\n");
-    
+
     } while (p->tMinutos < 0);
-    
+
     printf("\nEstatisticas registadas com sucesso!\n");
-    
 
     /* Guardar na equipa */
     t->players[t->nPlayers] = p;
@@ -667,7 +605,6 @@ void atualizar_jogador(int index)
     printf("\nJogador atualizado com sucesso!\n");
 }
 
-
 void listar_jogadores()
 {
     FILE *fic = fopen("jogadores.dat", "rb");
@@ -750,10 +687,8 @@ void listar_jogadores()
 }
 
 /* ---- 2.3 Ranking de jogadores ----- */
-void calcular_valia_jogador_escolhido(TEAM **listaEquipas, int nTeams)
+void calcular_valia_jogadores(TEAM **listaEquipas, int nTeams)
 {
-
-
     if (nTeams == 0)
     {
         printf("\nNao existem equipas carregadas.\n");
@@ -767,12 +702,38 @@ void calcular_valia_jogador_escolhido(TEAM **listaEquipas, int nTeams)
                i, listaEquipas[i]->name, listaEquipas[i]->nPlayers);
     }
 
+    printf("\nEscolha a equipa (ou -1 para todas): ");
     int idE;
-    printf("\nEscolha a equipa (ou -1 para voltar): ");
     scanf("%d", &idE);
 
+    /* ---- CASO 1: TODAS AS EQUIPAS ---- */
     if (idE == -1)
+    {
+        printf("\n*** VALIA DE TODAS AS EQUIPAS ***\n");
+        for (int i = 0; i < nTeams; i++)
+        {
+            TEAM *t = listaEquipas[i];
+            printf("\n**** Equipa: %s ****\n", t->name);
+
+            for (int j = 0; j < t->nPlayers; j++)
+            {
+                PLAYER *p = t->players[j];
+
+                if (p->tMinutos <= 100)
+                {
+                    printf("   %s - Nao jogou minutos insuficientes (%d).\n",
+                           p->name, p->tMinutos);
+                    continue;
+                }
+
+                float valia = calcular_valia(p);
+                printf("   %s - Valia: %.2f\n", p->name, valia);
+            }
+        }
         return;
+    }
+
+    /* ---- CASO 2: APENAS 1 EQUIPA ---- */
 
     if (idE < 0 || idE >= nTeams)
     {
@@ -782,33 +743,90 @@ void calcular_valia_jogador_escolhido(TEAM **listaEquipas, int nTeams)
 
     TEAM *t = listaEquipas[idE];
 
-    if (t->nPlayers == 0)
+    printf("\n**** Ranking dos jogadores da equipa: %s ****\n", t->name);
+
+    for (int j = 0; j < t->nPlayers; j++)
     {
-        printf("\nA equipa '%s' nao tem jogadores!\n", t->name);
-        return;
+        PLAYER *p = t->players[j];
+
+        if (p->tMinutos <= 100)
+        {
+            printf("   %s - Nao jogou minutos insuficientes (%d).\n",
+                   p->name, p->tMinutos);
+            continue;
+        }
+
+        float valia = calcular_valia(p);
+        printf("   %s - Valia: %.2f\n", p->name, valia);
     }
-
-    printf("\n**** JOGADORES DA EQUIPA %s ****\n", t->name);
-    for (int i = 0; i < t->nPlayers; i++)
-    {
-        printf("%d - %s\n", i, t->players[i]->name);
-    }
-
-    int idJ;
-    printf("\nEscolha o jogador: ");
-    scanf("%d", &idJ);
-
-    if (idJ < 0 || idJ >= t->nPlayers)
-    {
-        printf("\nJogador invalido!\n");
-        return;
-    }
-
-    PLAYER *p = t->players[idJ];
-    float valia = calcular_valia(p);
-
-    printf("\nValia do jogador %s: %.2f\n", p->name, valia);
 }
+
+
+/* ___________________________________________________RANKING*/
+void relatorio_valias()
+{
+    carregarEquipas(); // GARANTE QUE OS DADOS SAO LIDOS, nao estava a carregar os dados
+
+    if (nTeams == 0)
+    {
+        printf("\nNao ha equipas registadas.\n");
+        return;
+    }
+
+    TEAM *mais_valiosa = NULL; // comecar a null para podermos comparar e guaradr a mais valiosa
+    TEAM *menos_valiosa = NULL;// comecar a null para podermos comparar e guaradr a mais valiosa, assim qualquer valor real vai ser menor
+    float maior = -999999, menor = 999999; // valores iniciais extremos para comparar, em maior usar um valor negativo e maior um valor exagerado, assim qualquer valor real vai ser menor
+
+    PLAYER *jogador_mais = NULL;// comecar a null para podermos comparar e guaradr a mais valiosa
+    PLAYER *jogador_menos = NULL;// comecar a null para podermos comparar e guaradr a mais valiosa
+    float maior_j = -999999, menor_j = 999999; // valores iniciais extremos para comparar, em maior usar um valor negativo e maior um valor exagerado
+
+    for (int i = 0; i < nTeams; i++)
+    {
+        TEAM *t = listaEquipas[i];
+        float v = calcular_valia_equipa(t);
+
+        if (v > maior)
+        {
+            maior = v;
+            mais_valiosa = t;
+        }
+        if (v < menor)
+        {
+            menor = v;
+            menos_valiosa = t;
+        }
+
+        // Jogadores
+        for (int j = 0; j < t->nPlayers; j++)
+        {
+            PLAYER *p = t->players[j];
+            float val = calcular_valia(p);
+
+            if (val > maior_j)
+            {
+                maior_j = val;
+                jogador_mais = p;
+            }
+            if (val < menor_j)
+            {
+                menor_j = val;
+                jogador_menos = p;
+            }
+        }
+    }
+
+    printf("\n**** RELATORIO DE VALIAS ****\n");
+
+    printf("\nEquipa mais valiosa: %s (%.2f)\n", mais_valiosa->name, maior);
+    printf("Equipa menos valiosa: %s (%.2f)\n", menos_valiosa->name, menor);
+
+    printf("\nJogador mais valioso: %s (%.2f)\n", jogador_mais->name, maior_j);
+    printf("⬇️ Jogador menos valioso: %s (%.2f)\n", jogador_menos->name, menor_j);
+
+    printf("\n");
+}
+
 
 ///////////////////////////////////////////////////
 char menu_principal()
@@ -819,7 +837,8 @@ char menu_principal()
     printf("#-------------------------#\n");
     printf("| 1 - Gestao de equipas   |\n");
     printf("| 2 - Gestao de jogadores |\n");
-    printf("| 3 - Sair                |\n");
+    printf("| 3 - * Equipa e jogadpr mais valiosa e menos valiosa?? |\n");
+    printf("| 4 - Sair                |\n");
     printf("#-------------------------#\n");
     printf("\nEscolha uma opcao: ");
     scanf(" %c", &op);
@@ -1003,7 +1022,7 @@ int main()
                     break;
                 case '3':
                     carregarEquipas();
-                    calcular_valia_jogador_escolhido(listaEquipas, nTeams);
+                    calcular_valia_jogadores(listaEquipas, nTeams);
                     break;
                 case '4':
                     break;
@@ -1012,11 +1031,14 @@ int main()
             break;
         }
         case '3':
+            relatorio_valias();
+            break;
+        case '4':
             printf("\nObrigado por utilizar o programa de gestao de estatisticas de ANDEBOL!\n");
             break;
         }
 
-    } while (op != '3');
+    } while (op != '4');
 
     return 0;
 }
