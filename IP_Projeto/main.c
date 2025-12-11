@@ -196,7 +196,7 @@ void gravaEquipasTXT()
 
         if (op != 's' && op != 'S')
         {
-            printf("Operacao cancelada. Nada foi gravado.\n");
+            printf("Operacao cancelada.\n");
             return;
         }
     }
@@ -401,14 +401,37 @@ float calcular_valia_equipa(TEAM *t)
 
 /* ---- 2.1 Adicionar atletas a uma equipa ---- */
 // para nao repetir IDs
-int idExisteNaEquipa(TEAM *t, int id)
+int idExisteGlobal(int id)
 {
-    for (int i = 0; i < t->nPlayers; i++)
+    // 1 — verificar todas as equipas carregadas em memória
+    for (int i = 0; i < nTeams; i++)
     {
-        if (t->players[i]->num_id == id)
-            return 1; // Encontrado
+        TEAM *te = listaEquipas[i];   // <----- ADAPTADO
+
+        for (int j = 0; j < te->nPlayers; j++)
+        {
+            if (te->players[j]->num_id == id)
+                return 1; // encontrado
+        }
     }
-    return 0; // Não encontrado
+
+    // 2 — verificar no ficheiro jogadores.dat
+    FILE *fic = fopen("jogadores.dat", "rb");
+    if (!fic)
+        return 0; // ficheiro não existe -> ID não está em lado nenhum
+
+    PLAYER temp;
+    while (fread(&temp, sizeof(PLAYER), 1, fic) == 1)
+    {
+        if (temp.num_id == id)
+        {
+            fclose(fic);
+            return 1; // ID encontrado
+        }
+    }
+
+    fclose(fic);
+    return 0; // ID não existe
 }
 
 void adicionar_jogador(TEAM *t)
@@ -440,26 +463,26 @@ void adicionar_jogador(TEAM *t)
     VALIDACAO 1: NUMERO ID (7 dígitos)
     + proibição de IDs repetidos
     -------------------------- */
- do
- {
-     printf("\nIntroduza o numero de identificacao do atleta (7 digitos): ");
-     scanf("%d", &p->num_id);
- 
-     if (p->num_id < 0000000 || p->num_id > 9999999)
-     {
-         printf("Numero invalido! Tem de ter exatamente 7 digitos.\n");
-         continue;
-     }
- 
-     // NOVO: verificar se o ID já existe na equipa
-     if (idExisteNaEquipa(t, p->num_id))
-     {
-         printf("ERRO: Ja existe um atleta com esse numero de identificacao nesta equipa!\n");
-         continue;
-     }
- 
- } while (p->num_id < 0000000 || p->num_id > 9999999 || idExisteNaEquipa(t, p->num_id));
- 
+    do
+    {
+        printf("\nIntroduza o numero de identificacao do atleta (7 digitos): ");
+        scanf("%d", &p->num_id);
+
+        if (p->num_id < 0000000 || p->num_id > 9999999)
+        {
+            printf("Numero invalido! Tem de ter exatamente 7 digitos.\n");
+            continue;
+        }
+
+        // NOVO: verificar se o ID já existe na equipa
+        if (idExisteGlobal(p->num_id))
+        {
+            printf("ERRO: Ja existe um atleta com esse numero de identificacao nesta equipa!\n");
+            continue;
+        }
+
+    } while (p->num_id < 0000000 || p->num_id > 9999999 || (idExisteGlobal(p->num_id)));
+
     /* --------------------------
        VALIDACAO 2: ANO DE NASCIMENTO
        -------------------------- */
@@ -635,7 +658,7 @@ void remover_todos_jogadores()
         return;
     }
 
-    FILE *fic = fopen("jogadores.dat", "wb");  // abre e limpa
+    FILE *fic = fopen("jogadores.dat", "wb"); // abre e limpa
     if (!fic)
     {
         printf("\nErro ao limpar ficheiro jogadores.dat\n");
@@ -646,8 +669,6 @@ void remover_todos_jogadores()
 
     printf("\nTodos os jogadores foram removidos com sucesso!\n");
 }
-
-
 
 void atualizar_jogador(int index)
 {
@@ -781,7 +802,7 @@ void listar_jogadores()
     int opc;
     do
     {
-        printf("\n**** PESQUIZA DE JOGADORES ****\n");
+        printf("\n**** PESQUISA DE JOGADORES ****\n");
         printf("1 - Listar todos os jogadores\n");
         printf("2 - Pesquisar por nome de jogador\n");
         printf("3 - Ordenar alfabeticamente por nome de forma DECRESCENTE\n");
