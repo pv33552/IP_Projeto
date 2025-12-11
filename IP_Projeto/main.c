@@ -810,7 +810,8 @@ void listar_jogadores()
         printf("5 - Ordenar por numero de ID\n");
         printf("6 - Valia superior/inferior a X\n");
         printf("7 - Filtrar por ano de nascimento\n");
-        printf("8 - Voltar ao menu anterior\n");
+        printf("8 * - Filtrar por ano de nascimento superior/inferior a X\n");       
+        printf("9 * - Voltar ao menu anterior\n");
         printf("Escolha uma opcao: ");
         scanf("%d", &opc);
         getchar(); // Limpar buffer
@@ -963,8 +964,24 @@ void listar_jogadores()
             }
             break;
         }
-
         case 8:
+        { // Filtrar por ano de nascimento superior/inferior a X
+            int ano, tipo;
+            printf("Digite 1 para ano superior a X, 2 para inferior a X: ");
+            scanf("%d", &tipo);
+            printf("Digite o valor do ano X: ");
+            scanf("%d", &ano);
+
+            for (int i = 0; i < nJogadores; i++)
+            {
+                if ((tipo == 1 && jogadores[i].year > ano) || (tipo == 2 && jogadores[i].year < ano))
+                {
+                    printf("%s (Ano: %07d)\n", jogadores[i].name, jogadores[i].year);
+                }
+            }
+            break;
+        }
+        case 9:
             printf("Sair do menu jogadores...\n");
             break;
 
@@ -972,7 +989,7 @@ void listar_jogadores()
             printf("Opcao invalida!\n");
         }
 
-    } while (opc != 8);
+    } while (opc != 9);
 }
 
 void alterar_jogadores()
@@ -1150,6 +1167,11 @@ void relatorio_valias()
     PLAYER *jogador_menos = NULL;              // comecar a null para podermos comparar e guaradr a mais valiosa
     float maior_j = -999999, menor_j = 999999; // valores iniciais extremos para comparar, em maior usar um valor negativo e maior um valor exagerado
 
+    //Melhor jogador por posição (a usar enum POSITION)
+    PLAYER *melhor_pos[5] = {NULL};
+    float melhor_val_pos[5] = {-999999, -999999, -999999, -999999, -999999};
+
+
     for (int i = 0; i < nTeams; i++)
     {
         TEAM *t = listaEquipas[i];
@@ -1182,6 +1204,11 @@ void relatorio_valias()
                 menor_j = val;
                 jogador_menos = p;
             }
+            if (val > melhor_val_pos[p->position])
+            {
+                melhor_val_pos[p->position] = val;
+                melhor_pos[p->position] = p;
+            }
         }
     }
 
@@ -1192,6 +1219,25 @@ void relatorio_valias()
 
     printf("\nJogador mais valioso: %s (%.2f)\n", jogador_mais->name, maior_j);
     printf("Jogador menos valioso: %s (%.2f)\n", jogador_menos->name, menor_j);
+
+    printf("\n**** Jogadores mais valiosos por posicao ****\n");
+
+    char *posNomes[] = {"PONTA", "LATERAL", "CENTRAL", "PIVO", "GR"};
+
+    for (int i = 0; i < 5; i++)
+    {
+        if (melhor_pos[i] != NULL)
+        {
+            printf("%s: %s (%.2f)\n",
+                   posNomes[i],
+                   melhor_pos[i]->name,
+                   melhor_val_pos[i]);
+        }
+        else
+        {
+            printf("%s: (nenhum jogador)\n", posNomes[i]);
+        }
+    }
 }
 
 ///////////////////////////////////////////////////
@@ -1295,34 +1341,8 @@ int main()
                 case '2':
                     registar_equipa();
                     break;
-                case '3':
-                    relatorio_valias();
-                    break;
-                case '4':
-                {
-                    remover_todos_jogadores();
-                    break;
-                    /*listar_equipas();
-                    printf("Escolha a equipa para calcular a valia: ");
-                    int idx;
-                    scanf("%d", &idx);
-
-                    if (idx < 0 || idx >= nTeams)
-                    {
-                        printf("Equipa invalida!\n");
-                        break;
-                    }
-
-                    float valia = calcular_valia_equipa(listaEquipas[idx]);
-                    printf("\nA valia total da equipa %s e: %.2f\n", listaEquipas[idx]->name, valia);
-                    break;
-                    */
                 }
-                break;
-                case '5':
-                    break;
-                }
-            } while (opc != '5');
+            } while (opc != '3');
             break;
         }
         case '2':
@@ -1360,7 +1380,7 @@ int main()
                     alterar_jogadores();
                     break;
                 case '4':
-                    calcular_valia_jogadores(listaEquipas, nTeams);
+                remover_todos_jogadores();
                     break;
                 }
             } while (opc2 != '5');
