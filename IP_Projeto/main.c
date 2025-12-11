@@ -175,6 +175,74 @@ void carregarEquipas()
     fclose(fic);
 }
 
+/* ---- Gravar ficheiro TXT a pedido do utilizador ----*/
+void gravaEquipasTXT()
+{
+    carregarEquipas();
+    listar_equipas();
+    char nomeFich[100];
+
+    printf("Digite o nome do ficheiro para gravar (ex: dados.txt): ");
+    scanf(" %99s", nomeFich);
+
+    // Verificar se já existe
+    FILE *teste = fopen(nomeFich, "r");
+    if (teste)
+    {
+        fclose(teste);
+        char op;
+        printf("O ficheiro '%s' ja existe. Deseja sobrescrever? (s/n): ", nomeFich);
+        scanf(" %c", &op);
+
+        if (op != 's' && op != 'S')
+        {
+            printf("Operacao cancelada. Nada foi gravado.\n");
+            return;
+        }
+    }
+
+    FILE *fic = fopen(nomeFich, "w"); // texto
+    if (!fic)
+    {
+        printf("Erro ao criar ficheiro %s.\n", nomeFich);
+        return;
+    }
+
+    fprintf(fic, "**** RELATORIO DE EQUIPAS ****\n\n");
+    fprintf(fic, "Total de equipas: %d\n\n", nTeams);
+
+    for (int i = 0; i < nTeams; i++)
+    {
+        TEAM *t = listaEquipas[i];
+
+        fprintf(fic, "---------------------------------------\n");
+        fprintf(fic, "EQUIPA %d\n", i + 1);
+        fprintf(fic, "Nome: %s\n", t->name);
+        fprintf(fic, "Numero de Jogadores: %d\n\n", t->nPlayers);
+
+        for (int j = 0; j < t->nPlayers; j++)
+        {
+            PLAYER *p = t->players[j];
+
+            fprintf(fic, "   Jogador %d:\n", j + 1);
+            fprintf(fic, "      Nome: %s\n", p->name);
+            fprintf(fic, "      ID: %d\n", p->num_id);
+            fprintf(fic, "      Ano de nascimento: %d\n", p->year);
+            fprintf(fic, "      Posicao: %d\n", p->position);
+            fprintf(fic, "      Media Pontos: %.2f\n", p->mPontos);
+            fprintf(fic, "      Media Remates: %.2f\n", p->mRemates);
+            fprintf(fic, "      Media Assist: %.2f\n", p->mAssist);
+            fprintf(fic, "      Media Perdas: %.2f\n\n", p->mPerdas);
+        }
+
+        fprintf(fic, "\n");
+    }
+
+    fclose(fic);
+
+    printf("Dados gravados com sucesso no ficheiro '%s'.\n", nomeFich);
+}
+
 /* ---- 1. Listar equipa ---- */
 void listar_equipas()
 {
@@ -332,6 +400,17 @@ float calcular_valia_equipa(TEAM *t)
 }
 
 /* ---- 2.1 Adicionar atletas a uma equipa ---- */
+// para nao repetir IDs
+int idExisteNaEquipa(TEAM *t, int id)
+{
+    for (int i = 0; i < t->nPlayers; i++)
+    {
+        if (t->players[i]->num_id == id)
+            return 1; // Encontrado
+    }
+    return 0; // Não encontrado
+}
+
 void adicionar_jogador(TEAM *t)
 {
     if (t->nPlayers >= MAX_players_per_team)
@@ -358,18 +437,29 @@ void adicionar_jogador(TEAM *t)
     }
 
     /* --------------------------
-       VALIDACAO 1: NUMERO ID (7 dígitos)
-       -------------------------- */
-    do
-    {
-        printf("\nIntroduza o numero de identificacao do atleta (7 digitos): ");
-        scanf("%d", &p->num_id);
-
-        if (p->num_id < 0000000 || p->num_id > 9999999)
-            printf("Numero invalido! Tem de ter exatamente 7 digitos.\n");
-
-    } while (p->num_id < 0000000 || p->num_id > 9999999);
-
+    VALIDACAO 1: NUMERO ID (7 dígitos)
+    + proibição de IDs repetidos
+    -------------------------- */
+ do
+ {
+     printf("\nIntroduza o numero de identificacao do atleta (7 digitos): ");
+     scanf("%d", &p->num_id);
+ 
+     if (p->num_id < 0000000 || p->num_id > 9999999)
+     {
+         printf("Numero invalido! Tem de ter exatamente 7 digitos.\n");
+         continue;
+     }
+ 
+     // NOVO: verificar se o ID já existe na equipa
+     if (idExisteNaEquipa(t, p->num_id))
+     {
+         printf("ERRO: Ja existe um atleta com esse numero de identificacao nesta equipa!\n");
+         continue;
+     }
+ 
+ } while (p->num_id < 0000000 || p->num_id > 9999999 || idExisteNaEquipa(t, p->num_id));
+ 
     /* --------------------------
        VALIDACAO 2: ANO DE NASCIMENTO
        -------------------------- */
@@ -532,6 +622,33 @@ void remover_jogador(int index)
     printf("\nJogador removido com sucesso!\n");
 }
 
+void remover_todos_jogadores()
+{
+    char opc;
+
+    printf("\nTem a certeza que deseja remover TODOS os jogadores? (S/N): ");
+    scanf(" %c", &opc);
+
+    if (opc != 'S' && opc != 's')
+    {
+        printf("\nOperacao cancelada. Nenhum jogador foi removido.\n");
+        return;
+    }
+
+    FILE *fic = fopen("jogadores.dat", "wb");  // abre e limpa
+    if (!fic)
+    {
+        printf("\nErro ao limpar ficheiro jogadores.dat\n");
+        return;
+    }
+
+    fclose(fic);
+
+    printf("\nTodos os jogadores foram removidos com sucesso!\n");
+}
+
+
+
 void atualizar_jogador(int index)
 {
     FILE *fic = fopen("jogadores.dat", "rb+");
@@ -570,7 +687,7 @@ void atualizar_jogador(int index)
         return;
     }
 
-    printf("\nNovo nome (ENTER mantém '%s'): ", p.name);
+    printf("\nNovo nome (ENTER mantem nome: '%s'): ", p.name);
     char tmp[50];
     fgets(tmp, sizeof(tmp), stdin);
     if (tmp[0] != '\n')
@@ -583,7 +700,7 @@ void atualizar_jogador(int index)
     fgets(tmp, sizeof(tmp), stdin);
     if (tmp[0] != '\n')
     {
-        int novoAno = atoi(tmp);
+        int novoAno = atoi(tmp); // conerter para inteiro
         if (novoAno >= 1950 && novoAno <= 2025)
             p.year = novoAno;
         else
@@ -664,15 +781,15 @@ void listar_jogadores()
     int opc;
     do
     {
-        printf("\n**** MENU JOGADORES ****\n");
-        printf("1 - Listar todos\n");
-        printf("2 - Pesquisar por nome\n");
-        printf("3 - Filtrar pelo numero de ID\n");
-        printf("4 - Ordenar alfabeticamente por nome\n");
+        printf("\n**** PESQUIZA DE JOGADORES ****\n");
+        printf("1 - Listar todos os jogadores\n");
+        printf("2 - Pesquisar por nome de jogador\n");
+        printf("3 - Ordenar alfabeticamente por nome de forma DECRESCENTE\n");
+        printf("4 - Ordenar alfabeticamente por nome de forma CRESCENTE\n");
         printf("5 - Ordenar por numero de ID\n");
         printf("6 - Valia superior/inferior a X\n");
         printf("7 - Filtrar por ano de nascimento\n");
-        printf("8 - Sair\n");
+        printf("8 - Voltar ao menu anterior\n");
         printf("Escolha uma opcao: ");
         scanf("%d", &opc);
         getchar(); // Limpar buffer
@@ -728,18 +845,25 @@ void listar_jogadores()
         }
 
         case 3:
-        { // Filtrar pelo ID
-            int id;
-            printf("Digite o numero de ID: ");
-            scanf("%d", &id);
-
-            for (int i = 0; i < nJogadores; i++)
+        { // Ordenar por nome (decrescente)
+            for (int i = 0; i < nJogadores - 1; i++)
             {
-                if (jogadores[i].num_id == id)
+                for (int j = i + 1; j < nJogadores; j++)
                 {
-                    printf("Jogador encontrado: %s | Ano: %d\n", jogadores[i].name, jogadores[i].year);
+                    // "< 0" para ordem decrescente
+                    if (strcmp(jogadores[i].name, jogadores[j].name) < 0)
+                    {
+                        PLAYER temp = jogadores[i];
+                        jogadores[i] = jogadores[j];
+                        jogadores[j] = temp;
+                    }
                 }
             }
+
+            printf("Jogadores ordenados alfabeticamente de forma decrescente:\n");
+            for (int i = 0; i < nJogadores; i++)
+                printf("%s (ID: %d)\n", jogadores[i].name, jogadores[i].num_id);
+
             break;
         }
 
@@ -757,7 +881,7 @@ void listar_jogadores()
                     }
                 }
             }
-            printf("Jogadores ordenados alfabeticamente:\n");
+            printf("Jogadores ordenados alfabeticamente de forma crestente: \n");
             for (int i = 0; i < nJogadores; i++)
                 printf("%s (ID: %d)\n", jogadores[i].name, jogadores[i].num_id);
             break;
@@ -789,7 +913,7 @@ void listar_jogadores()
             int tipo;
             printf("Digite 1 para valia superior a X, 2 para inferior a X: ");
             scanf("%d", &tipo);
-            printf("Digite o valor X: ");
+            printf("Digite o valor da valia X: ");
             scanf("%f", &x);
 
             for (int i = 0; i < nJogadores; i++)
@@ -820,7 +944,7 @@ void listar_jogadores()
         }
 
         case 8:
-            printf("Saindo do menu jogadores...\n");
+            printf("Sair do menu jogadores...\n");
             break;
 
         default:
@@ -1047,8 +1171,6 @@ void relatorio_valias()
 
     printf("\nJogador mais valioso: %s (%.2f)\n", jogador_mais->name, maior_j);
     printf("Jogador menos valioso: %s (%.2f)\n", jogador_menos->name, menor_j);
-
-    printf("\n");
 }
 
 ///////////////////////////////////////////////////
@@ -1057,12 +1179,13 @@ char menu_principal()
     char op;
 
     printf("\n **** Menu de opcoes ****    \n");
-    printf("#-------------------------#\n");
-    printf("| 1 - Gestao de equipas   |\n");
-    printf("| 2 - Gestao de jogadores |\n");
-    printf("| 3 - * Equipa e jogadpr mais valiosa e menos valiosa?? |\n");
-    printf("| 4 - Sair                |\n");
-    printf("#-------------------------#\n");
+    printf("#--------------------------------#\n");
+    printf("| 1 - Gestao de equipas          |\n");
+    printf("| 2 - Gestao de jogadores        |\n");
+    printf("| 3 - ******Valias de equipa e jogador |\n");
+    printf("| 4 - ******Gravar os dados em um ficheiro .TXT falta otimizar|\n");
+    printf("| 5 - Sair                       |\n");
+    printf("#--------------------------------#\n");
     printf("\nEscolha uma opcao: ");
     scanf(" %c", &op);
 
@@ -1074,12 +1197,12 @@ char menu_gestao_equipas()
     char op;
 
     printf("\nFazer gestao da equipa: \n");
-    printf("#------------------------#\n");
-    printf("| 1 - Listar equipas     |\n");
-    printf("| 2 - Adicionar equipa   |\n");
-    printf("| 3 - Ranking de equipas |\n");
-    printf("| 4 - Sair               |\n");
-    printf("#------------------------#\n");
+    printf("#-----------------------------#\n");
+    printf("| 1 - Listar equipas          |\n");
+    printf("| 2 - Adicionar equipa        |\n");
+    printf("|  - * eliminar?????????      Ranking de equipas      |\n");
+    printf("| 4 - Voltar ao menu anterior |\n");
+    printf("#-----------------------------#\n");
     printf("\nEscolha uma opcao: ");
     scanf(" %c", &op);
 
@@ -1091,13 +1214,14 @@ char menu_gestao_jogadores()
     char op;
 
     printf("\nGestao de jogadores: \n");
-    printf("#--------------------------#\n");
-    printf("| 1 - Adicionar jogadores  |\n");
-    printf("| 2 - Listar jogadores     |\n");
-    printf("| 3 - ******* Alterar jogadores    |\n");
-    printf("| 4 - Ranking de jogadores |\n");
-    printf("| 5 - Sair                 |\n");
-    printf("#--------------------------#\n");
+    printf("#-----------------------------#\n");
+    printf("| 1 - Adicionar jogadores     |\n");
+    printf("| 2 - Listar jogadores        |\n");
+    printf("| 3 - *******Altualizar jogadores    |\n");
+    printf("| 4 - *******Eliminar TODOS os jogadores |\n");
+    printf("| * - **** ELIMINAR***Ranking de jogadores    |\n");
+    printf("| 5 - Voltar ao menu anterior |\n");
+    printf("#-----------------------------#\n");
     printf("\nEscolha uma opcao: ");
     scanf(" %c", &op);
 
@@ -1157,7 +1281,9 @@ int main()
                     break;
                 case '4':
                 {
-                    listar_equipas();
+                    remover_todos_jogadores();
+                    break;
+                    /*listar_equipas();
                     printf("Escolha a equipa para calcular a valia: ");
                     int idx;
                     scanf("%d", &idx);
@@ -1171,6 +1297,7 @@ int main()
                     float valia = calcular_valia_equipa(listaEquipas[idx]);
                     printf("\nA valia total da equipa %s e: %.2f\n", listaEquipas[idx]->name, valia);
                     break;
+                    */
                 }
                 break;
                 case '5':
@@ -1193,14 +1320,6 @@ int main()
                     carregarEquipas();
                     listar_equipas();
 
-                    printf("\nEquipas disponiveis: \n");
-
-                    for (int i = 0; i < nTeams; i++)
-                    {
-                        printf("%d - %s (%d jogadores)\n",
-                               i, listaEquipas[i]->name, listaEquipas[i]->nPlayers);
-                    }
-
                     printf("Escolha a equipa: ");
                     int idx;
                     scanf("%d", &idx);
@@ -1219,24 +1338,28 @@ int main()
                     listar_jogadores();
                     break;
                 case '3':
-                    carregarEquipas();
-                    calcular_valia_jogadores(listaEquipas, nTeams);
+                    alterar_jogadores();
                     break;
                 case '4':
+                    calcular_valia_jogadores(listaEquipas, nTeams);
                     break;
                 }
-            } while (opc2 != '4');
+            } while (opc2 != '5');
             break;
         }
         case '3':
             relatorio_valias();
             break;
         case '4':
+            gravaEquipasTXT();
+            break;
+        case '5':
+            gravaEquipas();
             printf("\nObrigado por utilizar o programa de gestao de estatisticas de ANDEBOL!\n");
             break;
         }
 
-    } while (op != '4');
+    } while (op != '5');
 
     return 0;
 }
