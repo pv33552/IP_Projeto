@@ -406,7 +406,7 @@ int idExisteGlobal(int id)
     // 1 — verificar todas as equipas carregadas em memória
     for (int i = 0; i < nTeams; i++)
     {
-        TEAM *te = listaEquipas[i];   // <----- ADAPTADO
+        TEAM *te = listaEquipas[i]; // <----- ADAPTADO
 
         for (int j = 0; j < te->nPlayers; j++)
         {
@@ -805,14 +805,14 @@ void listar_jogadores()
         printf("\n**** PESQUISA DE JOGADORES ****\n");
         printf("1 - Listar todos os jogadores\n");
         printf("2 - Pesquisar por nome de jogador\n");
-        printf("3 - Ordenar alfabeticamente por nome de forma DECRESCENTE\n");
-        printf("4 - Ordenar alfabeticamente por nome de forma CRESCENTE\n");
+        printf("3 - Ordenar alfabeticamente por nome de forma CRESCENTE\n");
+        printf("4 - Ordenar alfabeticamente por nome de forma DECRESCENTE\n");
         printf("5 - Ordenar por numero de ID\n");
         printf("6 - Valia superior/inferior a X\n");
         printf("7 - Filtrar por ano de nascimento\n");
-        printf("8 * - Filtrar por ano de nascimento superior/inferior a X\n");       
-        printf("9 * - Voltar ao menu anterior\n");
-        printf("Escolha uma opcao: ");
+        printf("8 - Filtrar por ano de nascimento superior/inferior a X\n");
+        printf("9 - Voltar ao menu anterior\n");
+        printf("\nEscolha uma opcao: ");
         scanf("%d", &opc);
         getchar(); // Limpar buffer
 
@@ -851,22 +851,90 @@ void listar_jogadores()
             break;
 
         case 2:
-        { // Pesquisar por nome
+        {
+            // Pesquisar por nome
             char nome[100];
             printf("Digite o nome (ou parte do nome) a pesquisar: ");
-            scanf(" %[^\n]", nome);
+            fgets(nome, sizeof(nome), stdin);
+            nome[strcspn(nome, "\n")] = '\0'; // remover o \n
+
+            if (strlen(nome) == 0)
+            {
+                printf("Pesquisa invalida! O nome nao pode estar vazio.\n");
+                break;
+            }
+
+            // Converter termo para minúsculas
+            char termo[100];
+            strcpy(termo, nome);
+            for (int i = 0; termo[i]; i++)
+                termo[i] = tolower(termo[i]);
+
+            // Array com os nomes das posições (mesmo na ordem do enum)
+            const char *posicoes[] = {"Ponta", "Lateral", "Central", "Pivo", "Guarda-Redes"};
+
+            int encontrados = 0;
 
             for (int i = 0; i < nJogadores; i++)
             {
-                if (strstr(jogadores[i].name, nome))
+                // Converter o nome do jogador para minúsculas
+                char nomeJogador[100];
+                strcpy(nomeJogador, jogadores[i].name);
+                for (int j = 0; nomeJogador[j]; j++)
+                    nomeJogador[j] = tolower(nomeJogador[j]);
+
+                // Verificar se contém o termo pesquisado
+                if (strstr(nomeJogador, termo))
                 {
-                    printf("Encontrado: %s (ID: %07d)\n", jogadores[i].name, jogadores[i].num_id);
+                    // Obter a posição em texto
+                    char *pos = posicoes[jogadores[i].position];
+
+                    // Mostrar todos os dados
+                    printf("\nJogador encontrado:\n");
+                    printf("- Nome: %s\n", jogadores[i].name);
+                    printf("- ID: %07d\n", jogadores[i].num_id);
+                    printf("- Ano: %d\n", jogadores[i].year);
+                    printf("- Posicao: %s\n", pos);
+                    printf("- Pontos: %.1f | Remates: %.1f | Perdas: %.1f | Assistencias: %.1f | Fintas: %.1f | Minutos: %d\n",
+                           jogadores[i].mPontos,
+                           jogadores[i].mRemates,
+                           jogadores[i].mPerdas,
+                           jogadores[i].mAssist,
+                           jogadores[i].mFintas,
+                           jogadores[i].tMinutos);
+
+                    encontrados++;
                 }
             }
+
+            if (encontrados == 0)
+                printf("\nNenhum jogador encontrado com o termo '%s'.\n", nome);
+
             break;
         }
 
         case 3:
+
+        { // Ordenar por nome
+            for (int i = 0; i < nJogadores - 1; i++)
+            {
+                for (int j = i + 1; j < nJogadores; j++)
+                {
+                    if (strcmp(jogadores[i].name, jogadores[j].name) > 0)
+                    {
+                        PLAYER temp = jogadores[i];
+                        jogadores[i] = jogadores[j];
+                        jogadores[j] = temp;
+                    }
+                }
+            }
+            printf("Jogadores ordenados alfabeticamente de forma CRESCENTE: \n");
+            for (int i = 0; i < nJogadores; i++)
+                printf("- %s (ID: %07d)\n", jogadores[i].name, jogadores[i].num_id);
+            break;
+        }
+        case 4:
+
         { // Ordenar por nome (decrescente)
             for (int i = 0; i < nJogadores - 1; i++)
             {
@@ -882,30 +950,10 @@ void listar_jogadores()
                 }
             }
 
-            printf("Jogadores ordenados alfabeticamente de forma decrescente:\n");
+            printf("Jogadores ordenados alfabeticamente de forma DECRESCENTE:\n");
             for (int i = 0; i < nJogadores; i++)
-                printf("%s (ID: %07d)\n", jogadores[i].name, jogadores[i].num_id);
+                printf("- %s (ID: %07d)\n", jogadores[i].name, jogadores[i].num_id);
 
-            break;
-        }
-
-        case 4:
-        { // Ordenar por nome
-            for (int i = 0; i < nJogadores - 1; i++)
-            {
-                for (int j = i + 1; j < nJogadores; j++)
-                {
-                    if (strcmp(jogadores[i].name, jogadores[j].name) > 0)
-                    {
-                        PLAYER temp = jogadores[i];
-                        jogadores[i] = jogadores[j];
-                        jogadores[j] = temp;
-                    }
-                }
-            }
-            printf("Jogadores ordenados alfabeticamente de forma crestente: \n");
-            for (int i = 0; i < nJogadores; i++)
-                printf("%s (ID: %07d)\n", jogadores[i].name, jogadores[i].num_id);
             break;
         }
 
@@ -925,27 +973,59 @@ void listar_jogadores()
             }
             printf("Jogadores ordenados por ID:\n");
             for (int i = 0; i < nJogadores; i++)
-                printf("%s (ID: %07d)\n", jogadores[i].name, jogadores[i].num_id);
+                printf("%07d - Jogador: %s\n", jogadores[i].num_id, jogadores[i].name);
             break;
         }
 
         case 6:
-        { // Valia superior/inferior a X
+        {
             float x;
             int tipo;
-            printf("Digite 1 para valia superior a X, 2 para inferior a X: ");
+
+            // Perguntar se quer superior ou inferior
+            printf("Digite 1 para VALIA TOTAL SUPERIOR a X\n");
+            printf("Digite 2 para VALIA TOTAL INFERIOR a X\n");
+            printf("Opcao: ");
             scanf("%d", &tipo);
-            printf("Digite o valor da valia X: ");
+
+            if (tipo != 1 && tipo != 2)
+            {
+                printf("Opcao invalida!\n");
+                break; // sai desta opcao
+            }
+
+            // Perguntar o valor X
+            printf("Digite o valor de X: ");
             scanf("%f", &x);
 
+            // Contador para saber se encontrou algum jogador
+            int encontrados = 0;
+
+            printf("\nJogadores com valia ");
+            if (tipo == 1)
+                printf("superior");
+            else
+                printf("inferior");
+            printf(" a %.2f:\n", x);
+
+            // Percorrer todos os jogadores
             for (int i = 0; i < nJogadores; i++)
             {
                 float val = calcular_valia(&jogadores[i]);
+
                 if ((tipo == 1 && val > x) || (tipo == 2 && val < x))
                 {
-                    printf("%s (Valia: %.2f)\n", jogadores[i].name, val);
+                    printf("%s | ID: %07d | Valia: %.2f\n",
+                           jogadores[i].name,
+                           jogadores[i].num_id,
+                           val);
+                    encontrados++;
                 }
             }
+
+            if (encontrados == 0)
+                printf("Nenhum jogador encontrado com esses criterios.\n");
+
             break;
         }
 
@@ -965,22 +1045,54 @@ void listar_jogadores()
             break;
         }
         case 8:
-        { // Filtrar por ano de nascimento superior/inferior a X
+        {
             int ano, tipo;
-            printf("Digite 1 para ano superior a X, 2 para inferior a X: ");
+
+            // Perguntar se quer superior ou inferior
+            printf("Digite 1 para jogadores com ano de nascimento SUPERIOR a X\n");
+            printf("Digite 2 para jogadores com ano de nascimento INFERIOR a X\n");
+            printf("Opcao: ");
             scanf("%d", &tipo);
+
+            if (tipo != 1 && tipo != 2)
+            {
+                printf("Opcao invalida!\n");
+                break; // sai desta opcao
+            }
+
+            // Perguntar o ano X
             printf("Digite o valor do ano X: ");
             scanf("%d", &ano);
 
+            // Contador para saber se encontrou algum jogador
+            int encontrados = 0;
+
+            printf("\nJogadores com ano de nascimento ");
+            if (tipo == 1)
+                printf("superior");
+            else
+                printf("inferior");
+            printf(" a %d:\n", ano);
+
+            // Percorrer todos os jogadores
             for (int i = 0; i < nJogadores; i++)
             {
                 if ((tipo == 1 && jogadores[i].year > ano) || (tipo == 2 && jogadores[i].year < ano))
                 {
-                    printf("%s (Ano: %07d)\n", jogadores[i].name, jogadores[i].year);
+                    printf("- %s | Ano: %d | ID: %07d\n",
+                           jogadores[i].name,
+                           jogadores[i].year,
+                           jogadores[i].num_id);
+                    encontrados++;
                 }
             }
+
+            if (encontrados == 0)
+                printf("Nenhum jogador encontrado com esses criterios.\n");
+
             break;
         }
+
         case 9:
             printf("Sair do menu jogadores...\n");
             break;
@@ -1167,10 +1279,9 @@ void relatorio_valias()
     PLAYER *jogador_menos = NULL;              // comecar a null para podermos comparar e guaradr a mais valiosa
     float maior_j = -999999, menor_j = 999999; // valores iniciais extremos para comparar, em maior usar um valor negativo e maior um valor exagerado
 
-    //Melhor jogador por posição (a usar enum POSITION)
+    // Melhor jogador por posição (a usar enum POSITION)
     PLAYER *melhor_pos[5] = {NULL};
     float melhor_val_pos[5] = {-999999, -999999, -999999, -999999, -999999};
-
 
     for (int i = 0; i < nTeams; i++)
     {
@@ -1281,8 +1392,8 @@ char menu_gestao_jogadores()
 
     printf("\nGestao de jogadores: \n");
     printf("#--------------------------------#\n");
-    printf("| 1 - Adicionar jogadores        |\n");
-    printf("| 2 - Listar jogadores           |\n");
+    printf("| 1 - Listar/Pesquisar jogadores |\n");
+    printf("| 2 - Adicionar jogadores        |\n");
     printf("| 3 - Altualizar jogadores       |\n");
     printf("| 4 - Remover TODOS os jogadores |\n");
     printf("| 5 - Voltar                     |\n");
@@ -1356,6 +1467,9 @@ int main()
                 switch (opc2)
                 {
                 case '1':
+                    listar_jogadores();
+                    break;
+                case '2':
                     carregarEquipas();
                     listar_equipas();
 
@@ -1373,14 +1487,11 @@ int main()
                         adicionar_jogador(listaEquipas[idx]);
                         break;
                     }
-                case '2':
-                    listar_jogadores();
-                    break;
                 case '3':
                     alterar_jogadores();
                     break;
                 case '4':
-                remover_todos_jogadores();
+                    remover_todos_jogadores();
                     break;
                 }
             } while (opc2 != '5');
