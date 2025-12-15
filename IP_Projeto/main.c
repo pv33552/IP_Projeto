@@ -117,6 +117,7 @@ void criaOuLeFicheiroJogadores(PLAYER *p)
     printf("Ficheiro '%s' criado e escrito com sucesso.\n", nome);
 }
 
+// Grava equipas no ficheiro
 void gravaEquipas()
 {
     FILE *fic = fopen("equipas.dat", "wb"); // REESCREVER
@@ -146,6 +147,7 @@ void gravaEquipas()
     printf("Equipas gravadas com sucesso.\n");
 }
 
+// Carregar equipas do ficheiro
 void carregarEquipas()
 {
     FILE *fic = fopen("equipas.dat", "rb");
@@ -173,74 +175,6 @@ void carregarEquipas()
     }
 
     fclose(fic);
-}
-
-/* ---- Gravar ficheiro TXT a pedido do utilizador ----*/
-void gravaEquipasTXT()
-{
-    carregarEquipas();
-    listar_equipas();
-    char nomeFich[100];
-
-    printf("Digite o nome do ficheiro para gravar (ex: dados.txt): ");
-    scanf(" %99s", nomeFich);
-
-    // Verificar se já existe
-    FILE *teste = fopen(nomeFich, "r");
-    if (teste)
-    {
-        fclose(teste);
-        char op;
-        printf("O ficheiro '%s' ja existe. Deseja sobrescrever? (s/n): ", nomeFich);
-        scanf(" %c", &op);
-
-        if (op != 's' && op != 'S')
-        {
-            printf("Operacao cancelada.\n");
-            return;
-        }
-    }
-
-    FILE *fic = fopen(nomeFich, "w"); // texto
-    if (!fic)
-    {
-        printf("Erro ao criar ficheiro %s.\n", nomeFich);
-        return;
-    }
-
-    fprintf(fic, "**** RELATORIO DE EQUIPAS ****\n\n");
-    fprintf(fic, "Total de equipas: %d\n\n", nTeams);
-
-    for (int i = 0; i < nTeams; i++)
-    {
-        TEAM *t = listaEquipas[i];
-
-        fprintf(fic, "---------------------------------------\n");
-        fprintf(fic, "EQUIPA %d\n", i + 1);
-        fprintf(fic, "Nome: %s\n", t->name);
-        fprintf(fic, "Numero de Jogadores: %d\n\n", t->nPlayers);
-
-        for (int j = 0; j < t->nPlayers; j++)
-        {
-            PLAYER *p = t->players[j];
-
-            fprintf(fic, "   Jogador %d:\n", j + 1);
-            fprintf(fic, "      Nome: %s\n", p->name);
-            fprintf(fic, "      ID: %07d\n", p->num_id);
-            fprintf(fic, "      Ano de nascimento: %d\n", p->year);
-            fprintf(fic, "      Posicao: %d\n", p->position);
-            fprintf(fic, "      Media Pontos: %.2f\n", p->mPontos);
-            fprintf(fic, "      Media Remates: %.2f\n", p->mRemates);
-            fprintf(fic, "      Media Assist: %.2f\n", p->mAssist);
-            fprintf(fic, "      Media Perdas: %.2f\n\n", p->mPerdas);
-        }
-
-        fprintf(fic, "\n");
-    }
-
-    fclose(fic);
-
-    printf("Dados gravados com sucesso no ficheiro '%s'.\n", nomeFich);
 }
 
 /* ---- 1. Listar equipa ---- */
@@ -324,6 +258,74 @@ void remover_equipa(int idx)
 
     fclose(fic);
 }
+/* ---- Gravar ficheiro TXT a pedido do utilizador ----*/
+void gravaEquipasTXT()
+{
+    carregarEquipas();
+    listar_equipas();
+    char nomeFich[100];
+
+    printf("Digite o nome do ficheiro para gravar (ex: dados.txt): ");
+    scanf(" %99s", nomeFich);
+
+    // Verificar se já existe e sobreescrever o ficheiro
+    FILE *teste = fopen(nomeFich, "r");
+    if (teste)
+    {
+        fclose(teste);
+        char op;
+        printf("O ficheiro '%s' ja existe. Deseja sobrescrever? (s/n): ", nomeFich);
+        scanf(" %c", &op);
+
+        if (op != 's' && op != 'S')
+        {
+            printf("Operacao cancelada.\n");
+            return;
+        }
+    }
+
+    // Escrever e gravar os dados no ficheiro TXT
+    FILE *fic = fopen(nomeFich, "w");
+    if (!fic)
+    {
+        printf("Erro ao criar ficheiro %s.\n", nomeFich);
+        return;
+    }
+
+    fprintf(fic, "**** RELATORIO DE EQUIPAS ****\n\n");
+    fprintf(fic, "Total de equipas: %d\n\n", nTeams);
+
+    for (int i = 0; i < nTeams; i++)
+    {
+        TEAM *t = listaEquipas[i];
+
+        fprintf(fic, "---------------------------------------\n");
+        fprintf(fic, "EQUIPA %d\n", i + 1);
+        fprintf(fic, "Nome: %s\n", t->name);
+        fprintf(fic, "Numero de Jogadores: %d\n\n", t->nPlayers);
+
+        for (int j = 0; j < t->nPlayers; j++)
+        {
+            PLAYER *p = t->players[j];
+
+            fprintf(fic, "   Jogador %d:\n", j + 1);
+            fprintf(fic, "      Nome: %s\n", p->name);
+            fprintf(fic, "      ID: %07d\n", p->num_id);
+            fprintf(fic, "      Ano de nascimento: %d\n", p->year);
+            fprintf(fic, "      Posicao: %d\n", p->position);
+            fprintf(fic, "      Media Pontos: %.2f\n", p->mPontos);
+            fprintf(fic, "      Media Remates: %.2f\n", p->mRemates);
+            fprintf(fic, "      Media Assist: %.2f\n", p->mAssist);
+            fprintf(fic, "      Media Perdas: %.2f\n\n", p->mPerdas);
+        }
+
+        fprintf(fic, "\n");
+    }
+
+    fclose(fic);
+
+    printf("Dados gravados com sucesso no ficheiro '%s'.\n", nomeFich);
+}
 
 /* ---- 2. Funcoes de registar equipa ---- */
 TEAM *registar_equipa()
@@ -343,7 +345,7 @@ TEAM *registar_equipa()
     {
         printf("\nNome invalido, por favor introduza um nome valido.\n");
         free(t);
-        return NULL;
+        return NULL; // termina a funcao em caso de erro
     }
     else
     {
@@ -375,7 +377,7 @@ float calcular_valia(PLAYER *p)
         return 2 * p->mPontos + 5 * p->mAssist + 4 * p->mFintas - 2 * p->mPerdas;
     case PIVO:
         return 2 * p->mPontos + 1 * p->mRemates + 5 * p->mFintas - 2 * p->mPerdas;
-    case GR: // Caso especial para GR
+    case GR: // Caso especial para GR a zero
         return 0;
     default:
         return 0;
@@ -390,6 +392,7 @@ float calcular_valia_equipa(TEAM *t)
         return 0.0;
     }
 
+    // Calcular a valia total começando em 0
     float valia_total = 0.0;
     for (int i = 0; i < t->nPlayers; i++)
     {
@@ -404,10 +407,10 @@ float calcular_valia_equipa(TEAM *t)
 // para nao repetir IDs
 int idExisteGlobal(int id)
 {
-    // 1 — verificar todas as equipas carregadas em memória
+    // Verificar todas as equipas carregadas em memória dentro da estrutura
     for (int i = 0; i < nTeams; i++)
     {
-        TEAM *te = listaEquipas[i]; // <----- ADAPTADO
+        TEAM *te = listaEquipas[i];
 
         for (int j = 0; j < te->nPlayers; j++)
         {
@@ -416,11 +419,12 @@ int idExisteGlobal(int id)
         }
     }
 
-    // 2 — verificar no ficheiro jogadores.dat
+    // Verificar no ficheiro jogadores.dat
     FILE *fic = fopen("jogadores.dat", "rb");
     if (!fic)
-        return 0; // ficheiro não existe -> ID não está em lado nenhum
+        return 0; // ficheiro não existe, ID não está listado nem a ser utilizado
 
+    // Ler todos os jogadores do ficheiro como uma verificação final de IDs existentes em um uso temporário
     PLAYER temp;
     while (fread(&temp, sizeof(PLAYER), 1, fic) == 1)
     {
@@ -435,14 +439,17 @@ int idExisteGlobal(int id)
     return 0; // ID não existe
 }
 
+// Função para adicionar jogador
 void adicionar_jogador(TEAM *t)
 {
+    // Verificar se a equipa já atingiu o limite máximo de jogadores
     if (t->nPlayers >= MAX_players_per_team)
     {
         printf("\nA equipa %s ja tem %d atletas (limite).\n", t->name, MAX_players_per_team);
         return;
     }
 
+    // Alocar memória para o jogador
     PLAYER *p = malloc(sizeof(PLAYER));
     if (!p)
     {
@@ -453,6 +460,7 @@ void adicionar_jogador(TEAM *t)
     printf("\nIntroduza o nome do atleta: ");
     scanf(" %[^\n]", p->name);
 
+    // Verificar se o nome do jogador foi introduzido
     if (p->name[0] == '\0')
     {
         printf("\nNome invalido.\n");
@@ -469,20 +477,23 @@ void adicionar_jogador(TEAM *t)
         printf("\nIntroduza o numero de identificacao do atleta (7 digitos): ");
         scanf("%d", &p->num_id);
 
+        // Verificar se o ID foi introduzido corretamente entre os valores pedidos
         if (p->num_id < 0000000 || p->num_id > 9999999)
         {
             printf("Numero invalido! Tem de ter exatamente 7 digitos.\n");
             continue;
         }
 
-        // NOVO: verificar se o ID já existe na equipa
+        // Verificar se o ID já existe na equipa
         if (idExisteGlobal(p->num_id))
         {
             printf("ERRO: Ja existe um atleta com esse numero de identificacao nesta equipa!\n");
             continue;
         }
 
-    } while (p->num_id < 0000000 || p->num_id > 9999999 || (idExisteGlobal(p->num_id)));
+    }
+    // Repetir o loop enquanto o ID for inválido ou já existir
+    while (p->num_id < 0000000 || p->num_id > 9999999 || (idExisteGlobal(p->num_id)));
 
     /* --------------------------
        VALIDACAO 2: ANO DE NASCIMENTO
@@ -492,10 +503,13 @@ void adicionar_jogador(TEAM *t)
         printf("\nIntroduza o ano de nascimento do atleta: ");
         scanf("%d", &p->year);
 
+        // Verificar se o ano foi introduzido corretamente engtre os valores pedidos
         if (p->year < 1950 || p->year > 2025)
             printf("Ano invalido! Tem de estar entre 1950 e 2025.\n");
 
-    } while (p->year < 1950 || p->year > 2025);
+    }
+    // Repetir o loop enquanto o ano for inválido
+    while (p->year < 1950 || p->year > 2025);
 
     /* --------------------------
        VALIDACAO 3: POSICAO
@@ -506,11 +520,15 @@ void adicionar_jogador(TEAM *t)
         printf("\nIntroduza a posicao do atleta (0-PONTA, 1-LATERAL, 2-CENTRAL, 3-PIVO, 4-GR): ");
         scanf("%d", &pos);
 
+        // Verificar se a posicao foi introduzida corretamente entre os valores definidos
         if (pos < 0 || pos > 4)
             printf("Posicao invalida!\n");
 
-    } while (pos < 0 || pos > 4);
+    } 
+    // Repetir o loop enquanto a posicao for inválida
+    while (pos < 0 || pos > 4);
 
+    // Definir a posicao do jogador com o enum
     p->position = (POSITION)pos;
 
     /* ---- Estatísticas do jogador ---- */
@@ -523,6 +541,7 @@ void adicionar_jogador(TEAM *t)
         printf("Pontos marcados: ");
         scanf("%f", &p->mPontos);
 
+        // Verificar se os pontos sao positivos
         if (p->mPontos < 0)
             printf("Valor invalido! Nao pode ser negativo.\n");
 
@@ -534,6 +553,7 @@ void adicionar_jogador(TEAM *t)
         printf("Remates: ");
         scanf("%f", &p->mRemates);
 
+        // Verificar se os remates sao positivos
         if (p->mRemates < 0)
             printf("Valor invalido!\n");
 
@@ -545,6 +565,7 @@ void adicionar_jogador(TEAM *t)
         printf("Perdas de bola: ");
         scanf("%f", &p->mPerdas);
 
+        // Verificar se as perdas de bola sao negativas
         if (p->mPerdas < 0)
             printf("Valor inválido!\n");
 
@@ -556,6 +577,7 @@ void adicionar_jogador(TEAM *t)
         printf("Assistencias: ");
         scanf("%f", &p->mAssist);
 
+        // Verificar se as assistencias sao positivas
         if (p->mAssist < 0)
             printf("Valor invalido!\n");
 
@@ -567,6 +589,7 @@ void adicionar_jogador(TEAM *t)
         printf("Fintas: ");
         scanf("%f", &p->mFintas);
 
+        // Verificar se as fintas sao positivas
         if (p->mFintas < 0)
             printf("Valor invalido!\n");
 
@@ -578,6 +601,7 @@ void adicionar_jogador(TEAM *t)
         printf("Minutos jogados: ");
         scanf("%d", &p->tMinutos);
 
+        // Verificar se os minutos de jogo sao positivos
         if (p->tMinutos < 0)
             printf("Valor invalido!\n");
 
@@ -585,14 +609,16 @@ void adicionar_jogador(TEAM *t)
 
     printf("\nEstatisticas registadas com sucesso!\n");
 
-    /* Guardar na equipa */
+    /* Guardar na equipa o numero de jogadores, e incrementar o numero de jogadores registados */
     t->players[t->nPlayers] = p;
     t->nPlayers++;
+    // chamar a funcao que grava as equipas
     gravaEquipas();
 
     printf("\nO atleta %s foi adicionado a equipa %s com sucesso.\n", p->name, t->name);
 
     /* Guardar no ficheiro */
+    //////////////////////////////////////// NECESSARIO??? TESTAR
     FILE *fic = fopen("jogadores.dat", "ab");
     if (!fic)
     {
@@ -607,6 +633,7 @@ void adicionar_jogador(TEAM *t)
 }
 
 /* ---- 2.2 Listar jogadores ----- */
+// Função para remover jogador
 void remover_jogador(int index)
 {
     FILE *fic = fopen("jogadores.dat", "rb");
@@ -616,6 +643,7 @@ void remover_jogador(int index)
         return;
     }
 
+    // Criar ficheiro temporario para subscrever o original uma vez que o jogador sera "removido" ou seja realinhado o indice subscrevendo os dados do jogador a eliminar
     FILE *temp = fopen("temp.dat", "wb");
     if (!temp)
     {
@@ -790,7 +818,7 @@ void listar_jogadores()
     {
         nJogadores++;
         if (nJogadores >= 1000)
-            break; 
+            break;
     }
     fclose(fic);
 
@@ -993,7 +1021,7 @@ void listar_jogadores()
             if (tipo != 1 && tipo != 2)
             {
                 printf("Opcao invalida!\n");
-                break; 
+                break;
             }
 
             printf("Digite o valor de X: ");
@@ -1167,7 +1195,7 @@ void alterar_jogadores()
                 }
             }
             if (strcmp(nomeEquipa, "Nao encontrada") != 0)
-                break; 
+                break;
         }
 
         printf("Equipa: %s\n", nomeEquipa);
