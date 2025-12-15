@@ -246,6 +246,7 @@ void gravaEquipasTXT()
 /* ---- 1. Listar equipa ---- */
 void listar_equipas()
 {
+    carregarEquipas();
     FILE *fic = fopen("equipas.dat", "rb");
     if (!fic)
     {
@@ -789,7 +790,7 @@ void listar_jogadores()
     {
         nJogadores++;
         if (nJogadores >= 1000)
-            break; // Limite de segurança
+            break; 
     }
     fclose(fic);
 
@@ -920,6 +921,7 @@ void listar_jogadores()
             {
                 for (int j = i + 1; j < nJogadores; j++)
                 {
+                    // "> 0" para ordem crescente
                     if (strcmp(jogadores[i].name, jogadores[j].name) > 0)
                     {
                         PLAYER temp = jogadores[i];
@@ -991,10 +993,9 @@ void listar_jogadores()
             if (tipo != 1 && tipo != 2)
             {
                 printf("Opcao invalida!\n");
-                break; // sai desta opcao
+                break; 
             }
 
-            // Perguntar o valor X
             printf("Digite o valor de X: ");
             scanf("%f", &x);
 
@@ -1152,6 +1153,24 @@ void alterar_jogadores()
         printf("Estatisticas: Pontos=%.1f, Remates=%.1f, Perdas=%.1f, Assist=%.1f, Fintas=%.1f, Minutos=%d\n",
                temp.mPontos, temp.mRemates, temp.mPerdas,
                temp.mAssist, temp.mFintas, temp.tMinutos);
+        // Procurar a equipa do jogador
+        char nomeEquipa[50] = "Nao encontrada";
+        for (int i = 0; i < nTeams; i++)
+        {
+            TEAM *t = listaEquipas[i];
+            for (int j = 0; j < t->nPlayers; j++)
+            {
+                if (t->players[j]->num_id == temp.num_id)
+                {
+                    strcpy(nomeEquipa, t->name);
+                    break;
+                }
+            }
+            if (strcmp(nomeEquipa, "Nao encontrada") != 0)
+                break; 
+        }
+
+        printf("Equipa: %s\n", nomeEquipa);
 
         count++;
     }
@@ -1233,7 +1252,6 @@ void calcular_valia_jogadores(TEAM **listaEquipas, int nTeams)
     }
 
     /* ---- CASO 2: APENAS 1 EQUIPA ---- */
-
     if (idE < 0 || idE >= nTeams)
     {
         printf("\nEquipa invalida!\n");
@@ -1260,7 +1278,6 @@ void calcular_valia_jogadores(TEAM **listaEquipas, int nTeams)
     }
 }
 
-/* ___________________________________________________RANKING*/
 void relatorio_valias()
 {
     carregarEquipas(); // GARANTE QUE OS DADOS SAO LIDOS, nao estava a carregar os dados
@@ -1356,7 +1373,7 @@ char menu_principal()
 {
     char op;
 
-    printf("\n      **** Menu de opcoes ****     \n");
+    printf("\n**** Menu de opcoes ****            \n");
     printf("#------------------------------------#\n");
     printf("| 1 - Gestao de equipas              |\n");
     printf("| 2 - Gestao de jogadores            |\n");
@@ -1470,7 +1487,7 @@ int main()
                     listar_jogadores();
                     break;
                 case '2':
-                    carregarEquipas();
+                    // carregarEquipas();
                     listar_equipas();
 
                     printf("Escolha a equipa: ");
