@@ -3,7 +3,9 @@
 #include <string.h>
 #include <ctype.h> // para a funcao tolower, MELHORAR A PESQUISA
 
-#define MAX_num_Id 7            // Numero ID de atleta com numero unico e positivo de 7 digitos
+#define ID_MIN 1000000
+#define ID_MAX 9999999
+// Numero ID de atleta com numero unico e positivo de 7 digitos
 #define MAX_players_per_team 15 // Numero maximo de atletas por equipa
 
 /* --------------------------------------------------------------------------------------------------------------------------------------------
@@ -43,6 +45,8 @@ typedef struct team
 TEAM *listaEquipas[100]; // até 100 equipas
 int nTeams = 0;          // Controlar numero de equipas
 int nPlayers = 0;        // Controlar numero de atletas
+// Contador de ID
+int proximoID = 0000000; // primeiro ID com 7 dígitos
 
 /* --------------------------------------------------------------------------------------------------------------------------------------------
     FUNÇÕES DO PROGRAMA:
@@ -192,6 +196,7 @@ void carregarEquipas()
 ----------------------------------------------------------------------------------------------------------------------------------------------- */
 void listar_equipas()
 {
+    /*
     carregarEquipas();
     FILE *fic = fopen("equipas.dat", "rb");
     if (!fic)
@@ -201,6 +206,7 @@ void listar_equipas()
     }
 
     fread(&nTeams, sizeof(int), 1, fic);
+
 
     printf("\n**** LISTA DE EQUIPAS ****\n");
 
@@ -222,6 +228,21 @@ void listar_equipas()
     }
 
     fclose(fic);
+    */
+
+    if (nTeams == 0)
+    {
+        printf("\nNao ha equipas registadas.\n");
+        return;
+    }
+
+    printf("\n**** LISTA DE EQUIPAS ****\n");
+
+    for (int i = 0; i < nTeams; i++)
+    {
+        TEAM *t = listaEquipas[i];
+        printf("%d - %s (%d jogadores)\n", i, t->name, t->nPlayers);
+    }
 }
 
 /* --------------------------------------------------------------------------------------------------------------------------------------------
@@ -430,8 +451,30 @@ float calcular_valia_equipa(TEAM *t)
     2.2 -> ADICIONAR JOGADORES A UMA EQUIPA:
 ----------------------------------------------------------------------------------------------------------------------------------------------- */
 // Verificar se o ID ja existe, para nao repetir IDs
+void inicializarProximoID()
+{
+    FILE *fic = fopen("jogadores.dat", "rb");
+    if (!fic)
+        return;
+
+    PLAYER p;
+    int maxID = proximoID;
+
+    while (fread(&p, sizeof(PLAYER), 1, fic) == 1)
+    {
+        if (p.num_id >= maxID)
+            maxID = p.num_id + 1;
+    }
+
+    fclose(fic);
+
+    if (maxID <= 9999999)
+        proximoID = maxID;
+}
+
 int idExisteGlobal(int id)
 {
+
     // Verificar todas as equipas carregadas em memória dentro da estrutura
     for (int i = 0; i < nTeams; i++)
     {
@@ -492,30 +535,45 @@ void adicionar_jogador(TEAM *t)
         free(p);
         return;
     }
+    /*
+        // VALIDACAO: NUMERO ID (7 dígitos) E proibição de IDs repetidos
+        do
+        {
+            printf("\nIntroduza o numero de identificacao do atleta (7 digitos): ");
+            scanf("%d", &p->num_id);
 
-    // VALIDACAO: NUMERO ID (7 dígitos) E proibição de IDs repetidos
+            // Verificar se o ID foi introduzido corretamente entre os valores pedidos
+            if (p->num_id < 0000000 || p->num_id > 9999999)
+            {
+                printf("Numero invalido! Tem de ter exatamente 7 digitos.\n");
+                continue;
+            }
+
+            // Verificar se o ID já existe na equipa
+            if (idExisteGlobal(p->num_id))
+            {
+                printf("ERRO: Ja existe um atleta com esse numero de identificacao nesta equipa!\n");
+                continue;
+            }
+
+        }
+        // Repetir o loop enquanto o ID for inválido ou já existir
+        while (p->num_id < 0000000 || p->num_id > 9999999 || (idExisteGlobal(p->num_id)));
+        */
+    // GERAR ID AUTOMATICAMENTE (incremental)
     do
     {
-        printf("\nIntroduza o numero de identificacao do atleta (7 digitos): ");
-        scanf("%d", &p->num_id);
+        p->num_id = proximoID++;
+    } while (idExisteGlobal(p->num_id) && proximoID <= 9999999);
 
-        // Verificar se o ID foi introduzido corretamente entre os valores pedidos
-        if (p->num_id < 0000000 || p->num_id > 9999999)
-        {
-            printf("Numero invalido! Tem de ter exatamente 7 digitos.\n");
-            continue;
-        }
-
-        // Verificar se o ID já existe na equipa
-        if (idExisteGlobal(p->num_id))
-        {
-            printf("ERRO: Ja existe um atleta com esse numero de identificacao nesta equipa!\n");
-            continue;
-        }
-
+    if (p->num_id > 9999999)
+    {
+        printf("Erro: limite maximo de IDs atingido.\n");
+        free(p);
+        return;
     }
-    // Repetir o loop enquanto o ID for inválido ou já existir
-    while (p->num_id < 0000000 || p->num_id > 9999999 || (idExisteGlobal(p->num_id)));
+
+    printf("\nID do atleta gerado automaticamente: %07d\n", p->num_id);
 
     // VALIDACAO: ANO DE NASCIMENTO
     do
@@ -639,7 +697,7 @@ void adicionar_jogador(TEAM *t)
 
     /* Guardar no ficheiro */
     //////////////////////////////////////// NECESSARIO??? TESTAR
-    
+
     FILE *fic = fopen("jogadores.dat", "ab");
     if (!fic)
     {
@@ -1095,8 +1153,10 @@ void listar_jogadores()
         }
 
         case 7:
-        { // Filtrar por ano de nascimento
+        {
             int ano;
+            int encontrado = 0; // flag
+
             printf("Digite o ano de nascimento: ");
             scanf("%d", &ano);
 
@@ -1105,10 +1165,18 @@ void listar_jogadores()
                 if (jogadores[i].year == ano)
                 {
                     printf("%s (ID: %07d)\n", jogadores[i].name, jogadores[i].num_id);
+                    encontrado = 1;
                 }
             }
+
+            if (!encontrado)
+            {
+                printf("Nenhum jogador encontrado com o ano de nascimento %d.\n", ano);
+            }
+
             break;
         }
+
         case 8:
         {
             int ano, tipo;
@@ -1513,6 +1581,9 @@ int main()
 
     criaOuLeFicheiroEquipas(&tempTeam);
     criaOuLeFicheiroJogadores(&tempPlayer);
+    carregarEquipas();
+    inicializarProximoID();
+
     do
     {
 
