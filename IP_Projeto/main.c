@@ -1,11 +1,16 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h> // para a funcao tolower, MELHORAR A PESQUISA
 
 #define MAX_num_Id 7            // Numero ID de atleta com numero unico e positivo de 7 digitos
 #define MAX_players_per_team 15 // Numero maximo de atletas por equipa
 
-/* ---- Estruturas do programa ---- */
+/* --------------------------------------------------------------------------------------------------------------------------------------------
+    ESTRUTUREAS DO PROGRAMA:
+----------------------------------------------------------------------------------------------------------------------------------------------- */
+
+// Cria um conjunto de valores possíveis, normalmente para escolhas/estados
 typedef enum position
 {
     PONTA,
@@ -15,6 +20,7 @@ typedef enum position
     GR
 } POSITION;
 
+// Cria a estrutura do jogador
 typedef struct player
 {
     char name[100];
@@ -25,6 +31,7 @@ typedef struct player
     int tMinutos;
 } PLAYER;
 
+// Cria a estrutura da equipa
 typedef struct team
 {
     char name[50];
@@ -32,11 +39,14 @@ typedef struct team
     PLAYER *players[MAX_players_per_team]; // Controlar um maximo de 15
 } TEAM;
 
+// Variaveis globais de controlo
 TEAM *listaEquipas[100]; // até 100 equipas
 int nTeams = 0;          // Controlar numero de equipas
 int nPlayers = 0;        // Controlar numero de atletas
 
-/* ---- Funções do programa ---- */
+/* --------------------------------------------------------------------------------------------------------------------------------------------
+    FUNÇÕES DO PROGRAMA:
+----------------------------------------------------------------------------------------------------------------------------------------------- */
 
 /* ---- Funcoes Auxiliares ---- */
 void criaOuLeFicheiroEquipas(TEAM *t)
@@ -177,7 +187,9 @@ void carregarEquipas()
     fclose(fic);
 }
 
-/* ---- 1. Listar equipa ---- */
+/* --------------------------------------------------------------------------------------------------------------------------------------------
+    1.1 / 2.2 / 4. gravaEquipasTXT() -> LISTAR EQUIPAS:
+----------------------------------------------------------------------------------------------------------------------------------------------- */
 void listar_equipas()
 {
     carregarEquipas();
@@ -212,7 +224,9 @@ void listar_equipas()
     fclose(fic);
 }
 
-/* ---- 1.1 Remover equipa ---- */
+/* --------------------------------------------------------------------------------------------------------------------------------------------
+    1.1 -> REMOVER EQUIPA:
+----------------------------------------------------------------------------------------------------------------------------------------------- */
 void remover_equipa(int idx)
 {
     if (idx < 0 || idx >= nTeams)
@@ -258,7 +272,10 @@ void remover_equipa(int idx)
 
     fclose(fic);
 }
-/* ---- Gravar ficheiro TXT a pedido do utilizador ----*/
+
+/* --------------------------------------------------------------------------------------------------------------------------------------------
+    4 -> GRAVAR EQUIPAS TXT A PEDIDO DO UTILIZADOR:
+----------------------------------------------------------------------------------------------------------------------------------------------- */
 void gravaEquipasTXT()
 {
     carregarEquipas();
@@ -327,7 +344,9 @@ void gravaEquipasTXT()
     printf("Dados gravados com sucesso no ficheiro '%s'.\n", nomeFich);
 }
 
-/* ---- 2. Funcoes de registar equipa ---- */
+/* --------------------------------------------------------------------------------------------------------------------------------------------
+    1.2 -> REGISTAR EQUIPA NA ESTRUTURA:
+----------------------------------------------------------------------------------------------------------------------------------------------- */
 TEAM *registar_equipa()
 {
     TEAM *t = malloc(sizeof(TEAM));
@@ -362,8 +381,9 @@ TEAM *registar_equipa()
     }
 }
 
-/* ---- *************. Pesquisar atletas OU equipas por valia  ----  */
-// Calcular a valia primeiro
+/* --------------------------------------------------------------------------------------------------------------------------------------------
+    2.6 / calcular_valia_jogadores / 4. calcular_valia_equipa() / 3. relatorio_valias() -> CALCULAR A VALIA DE UM JOGADOR (PARA DEPOIS CALCULAR A EQUIPA):
+----------------------------------------------------------------------------------------------------------------------------------------------- */
 
 float calcular_valia(PLAYER *p)
 {
@@ -384,6 +404,9 @@ float calcular_valia(PLAYER *p)
     }
 }
 
+/* --------------------------------------------------------------------------------------------------------------------------------------------
+    3. relatorio_valias() -> CALCULAR A VALIA DE UMA EQUIPA:
+----------------------------------------------------------------------------------------------------------------------------------------------- */
 float calcular_valia_equipa(TEAM *t)
 {
     if (!t || t->nPlayers == 0)
@@ -403,8 +426,10 @@ float calcular_valia_equipa(TEAM *t)
     return valia_total;
 }
 
-/* ---- 2.1 Adicionar atletas a uma equipa ---- */
-// para nao repetir IDs
+/* --------------------------------------------------------------------------------------------------------------------------------------------
+    2.2 -> ADICIONAR JOGADORES A UMA EQUIPA:
+----------------------------------------------------------------------------------------------------------------------------------------------- */
+// Verificar se o ID ja existe, para nao repetir IDs
 int idExisteGlobal(int id)
 {
     // Verificar todas as equipas carregadas em memória dentro da estrutura
@@ -468,10 +493,7 @@ void adicionar_jogador(TEAM *t)
         return;
     }
 
-    /* --------------------------
-    VALIDACAO 1: NUMERO ID (7 dígitos)
-    + proibição de IDs repetidos
-    -------------------------- */
+    // VALIDACAO: NUMERO ID (7 dígitos) E proibição de IDs repetidos
     do
     {
         printf("\nIntroduza o numero de identificacao do atleta (7 digitos): ");
@@ -495,9 +517,7 @@ void adicionar_jogador(TEAM *t)
     // Repetir o loop enquanto o ID for inválido ou já existir
     while (p->num_id < 0000000 || p->num_id > 9999999 || (idExisteGlobal(p->num_id)));
 
-    /* --------------------------
-       VALIDACAO 2: ANO DE NASCIMENTO
-       -------------------------- */
+    // VALIDACAO: ANO DE NASCIMENTO
     do
     {
         printf("\nIntroduza o ano de nascimento do atleta: ");
@@ -511,27 +531,25 @@ void adicionar_jogador(TEAM *t)
     // Repetir o loop enquanto o ano for inválido
     while (p->year < 1950 || p->year > 2025);
 
-    /* --------------------------
-       VALIDACAO 3: POSICAO
-       -------------------------- */
+    // VALIDACAO: POSICAO DO JOGADOR
     int pos;
     do
     {
-        printf("\nIntroduza a posicao do atleta (0-PONTA, 1-LATERAL, 2-CENTRAL, 3-PIVO, 4-GR): ");
+        printf("\nIntroduza a posicao do jogador (0-PONTA, 1-LATERAL, 2-CENTRAL, 3-PIVO, 4-GR): ");
         scanf("%d", &pos);
 
         // Verificar se a posicao foi introduzida corretamente entre os valores definidos
         if (pos < 0 || pos > 4)
             printf("Posicao invalida!\n");
 
-    } 
+    }
     // Repetir o loop enquanto a posicao for inválida
     while (pos < 0 || pos > 4);
 
     // Definir a posicao do jogador com o enum
     p->position = (POSITION)pos;
 
-    /* ---- Estatísticas do jogador ---- */
+    // VALIDACAO: ESTATISTICAS DO JOGADOR
 
     printf("\n**** Introduza as estatisticas do jogador ****\n");
 
@@ -612,6 +630,8 @@ void adicionar_jogador(TEAM *t)
     /* Guardar na equipa o numero de jogadores, e incrementar o numero de jogadores registados */
     t->players[t->nPlayers] = p;
     t->nPlayers++;
+
+    /////////////////////////
     // chamar a funcao que grava as equipas
     gravaEquipas();
 
@@ -619,6 +639,7 @@ void adicionar_jogador(TEAM *t)
 
     /* Guardar no ficheiro */
     //////////////////////////////////////// NECESSARIO??? TESTAR
+    
     FILE *fic = fopen("jogadores.dat", "ab");
     if (!fic)
     {
@@ -632,8 +653,9 @@ void adicionar_jogador(TEAM *t)
     printf("Atleta gravado no ficheiro.\n");
 }
 
-/* ---- 2.2 Listar jogadores ----- */
-// Função para remover jogador
+/* --------------------------------------------------------------------------------------------------------------------------------------------
+    2.2 -> REMOVER JOGADOR DA EQUIPA:
+----------------------------------------------------------------------------------------------------------------------------------------------- */
 void remover_jogador(int index)
 {
     FILE *fic = fopen("jogadores.dat", "rb");
@@ -674,6 +696,9 @@ void remover_jogador(int index)
     printf("\nJogador removido com sucesso!\n");
 }
 
+/* --------------------------------------------------------------------------------------------------------------------------------------------
+    2.4 -> REMOVER TODOS OS JOGADORES DA ESTRUTURA:
+----------------------------------------------------------------------------------------------------------------------------------------------- */
 void remover_todos_jogadores()
 {
     char opc;
@@ -699,8 +724,12 @@ void remover_todos_jogadores()
     printf("\nTodos os jogadores foram removidos com sucesso!\n");
 }
 
+/* --------------------------------------------------------------------------------------------------------------------------------------------
+    2.3 alterar_jogadores() -> ATUALIZAR JOGADOR:
+----------------------------------------------------------------------------------------------------------------------------------------------- */
 void atualizar_jogador(int index)
 {
+    // "+"" → ler E escrever no ficheiro binario jogadores.dat sem remover conteudo existente
     FILE *fic = fopen("jogadores.dat", "rb+");
     if (!fic)
     {
@@ -710,6 +739,8 @@ void atualizar_jogador(int index)
 
     PLAYER p;
 
+    // fseek serve para mover o cursor do ficheiro (a posição onde vamos ler ou escrever).
+    // SEEK_SET ir diretamente ao index do jogador
     fseek(fic, index * sizeof(PLAYER), SEEK_SET);
     fread(&p, sizeof(PLAYER), 1, fic);
 
@@ -742,56 +773,57 @@ void atualizar_jogador(int index)
     fgets(tmp, sizeof(tmp), stdin);
     if (tmp[0] != '\n')
     {
+        // A string passa a terminar antes do ENTER ou seja o \n
         tmp[strcspn(tmp, "\n")] = 0;
+        // copia a string temporaria para o nome do jogador "limpa"
         strcpy(p.name, tmp);
     }
 
     printf("Ano de nascimento (%d): ", p.year);
+    // stdin entrada padrao "teclado"
     fgets(tmp, sizeof(tmp), stdin);
     if (tmp[0] != '\n')
     {
-        int novoAno = atoi(tmp); // conerter para inteiro
+        int novoAno = atoi(tmp); // atoi - ASCII TO Integer - Converte texto (string) em inteiro
         if (novoAno >= 1950 && novoAno <= 2025)
             p.year = novoAno;
         else
             printf("Ano invalido! Mantido: %d\n", p.year);
     }
 
-    /* ================================
-       ATUALIZAÇÃO DAS ESTATÍSTICAS
-    ================================= */
+    // ATUALIZAÇÃO DAS ESTATÍSTICAS
 
     printf("\n**** Atualizar Estatisticas ****\n");
 
     printf("Pontos (%.1f): ", p.mPontos);
     fgets(tmp, sizeof(tmp), stdin);
     if (tmp[0] != '\n')
-        p.mPontos = atof(tmp); // conerter para inteiro
+        p.mPontos = atof(tmp); // atof - ASCII TO Float - Converte texto (string) em número real (double/float)
 
     printf("Remates (%.1f): ", p.mRemates);
     fgets(tmp, sizeof(tmp), stdin);
     if (tmp[0] != '\n')
-        p.mRemates = atof(tmp); // conerter para inteiro
+        p.mRemates = atof(tmp); // atof - ASCII TO Float - Converte texto (string) em número real (double/float)
 
     printf("Perdas (%.1f): ", p.mPerdas);
     fgets(tmp, sizeof(tmp), stdin);
     if (tmp[0] != '\n')
-        p.mPerdas = atof(tmp); // conerter para inteiro
+        p.mPerdas = atof(tmp); // atof - ASCII TO Float - Converte texto (string) em número real (double/float)
 
     printf("Assistencias (%.1f): ", p.mAssist);
     fgets(tmp, sizeof(tmp), stdin);
     if (tmp[0] != '\n')
-        p.mAssist = atof(tmp); // conerter para inteiro
+        p.mAssist = atof(tmp); // atof - ASCII TO Float - Converte texto (string) em número real (double/float)
 
     printf("Fintas (%.1f): ", p.mFintas);
     fgets(tmp, sizeof(tmp), stdin);
     if (tmp[0] != '\n')
-        p.mFintas = atof(tmp); // conerter para inteiro
+        p.mFintas = atof(tmp); // atof - ASCII TO Float - Converte texto (string) em número real (double/float)
 
     printf("Minutos (%d): ", p.tMinutos);
     fgets(tmp, sizeof(tmp), stdin);
     if (tmp[0] != '\n')
-        p.tMinutos = atoi(tmp); // conerter para inteiro
+        p.tMinutos = atoi(tmp); // atoi - ASCII TO Integer - Converte texto (string) em inteiro
 
     fseek(fic, index * sizeof(PLAYER), SEEK_SET);
     fwrite(&p, sizeof(PLAYER), 1, fic);
@@ -801,6 +833,9 @@ void atualizar_jogador(int index)
     printf("\nJogador atualizado com sucesso!\n");
 }
 
+/* --------------------------------------------------------------------------------------------------------------------------------------------
+   2.1 -> LISTAR JOGADORES:
+----------------------------------------------------------------------------------------------------------------------------------------------- */
 void listar_jogadores()
 {
     PLAYER jogadores[1000]; // Array temporário para carregar jogadores
@@ -851,7 +886,7 @@ void listar_jogadores()
             for (int i = 0; i < nJogadores; i++)
             {
                 PLAYER p = jogadores[i];
-                char *pos;
+                const char *pos;
                 switch (p.position)
                 {
                 case PONTA:
@@ -893,6 +928,7 @@ void listar_jogadores()
                 break;
             }
 
+            // Para uma pesquisa mais eficiente, converter tudo para minúsculas
             // Converter termo para minúsculas
             char termo[100];
             strcpy(termo, nome);
@@ -916,7 +952,7 @@ void listar_jogadores()
                 if (strstr(nomeJogador, termo))
                 {
                     // Obter a posição em texto
-                    char *pos = posicoes[jogadores[i].position];
+                    const char *pos = posicoes[jogadores[i].position];
 
                     // Mostrar todos os dados
                     printf("\nJogador encontrado:\n");
@@ -1086,10 +1122,10 @@ void listar_jogadores()
             if (tipo != 1 && tipo != 2)
             {
                 printf("Opcao invalida!\n");
-                break; // sai desta opcao
+                break;
             }
 
-            // Perguntar o ano X
+            // Perguntar o ano X a pesquisar
             printf("Digite o valor do ano X: ");
             scanf("%d", &ano);
 
@@ -1133,6 +1169,9 @@ void listar_jogadores()
     } while (opc != 9);
 }
 
+/* --------------------------------------------------------------------------------------------------------------------------------------------
+   2.3 -> ALTERAR JOGADORES:
+----------------------------------------------------------------------------------------------------------------------------------------------- */
 void alterar_jogadores()
 {
     FILE *fic = fopen("jogadores.dat", "rb");
@@ -1142,6 +1181,7 @@ void alterar_jogadores()
         return;
     }
 
+    // Ler e listar todos os jogadores do ficheiro jogadores.dat com suas equipas associadas como temp
     PLAYER temp;
     int count = 0;
 
@@ -1232,7 +1272,10 @@ void alterar_jogadores()
     }
 }
 
-/* ---- 2.3 Ranking de jogadores ----- */
+/* --------------------------------------------------------------------------------------------------------------------------------------------
+   ? -> CALCULAR VALIA DOS JOGADORES:
+----------------------------------------------------------------------------------------------------------------------------------------------- */
+/*
 void calcular_valia_jogadores(TEAM **listaEquipas, int nTeams)
 {
     if (nTeams == 0)
@@ -1252,7 +1295,7 @@ void calcular_valia_jogadores(TEAM **listaEquipas, int nTeams)
     int idE;
     scanf("%d", &idE);
 
-    /* ---- CASO 1: TODAS AS EQUIPAS ---- */
+    // CASO 1: TODAS AS EQUIPAS
     if (idE == -1)
     {
         printf("\n*** VALIA DE TODAS AS EQUIPAS ***\n");
@@ -1279,7 +1322,7 @@ void calcular_valia_jogadores(TEAM **listaEquipas, int nTeams)
         return;
     }
 
-    /* ---- CASO 2: APENAS 1 EQUIPA ---- */
+    // CASO 2: APENAS 1 EQUIPA
     if (idE < 0 || idE >= nTeams)
     {
         printf("\nEquipa invalida!\n");
@@ -1305,7 +1348,11 @@ void calcular_valia_jogadores(TEAM **listaEquipas, int nTeams)
         printf("   %s - Valia: %.2f\n", p->name, valia);
     }
 }
+*/
 
+/* --------------------------------------------------------------------------------------------------------------------------------------------
+   3. -> RELATORIO DE VALIAS (JOGADORES E EQUIPAS MAIS E MENOS VALIOSOS):
+----------------------------------------------------------------------------------------------------------------------------------------------- */
 void relatorio_valias()
 {
     carregarEquipas(); // GARANTE QUE OS DADOS SAO LIDOS, nao estava a carregar os dados
@@ -1316,13 +1363,13 @@ void relatorio_valias()
         return;
     }
 
-    TEAM *mais_valiosa = NULL;             // comecar a null para podermos comparar e guaradr a mais valiosa
-    TEAM *menos_valiosa = NULL;            // comecar a null para podermos comparar e guaradr a mais valiosa, assim qualquer valor real vai ser menor
+    TEAM *mais_valiosa = NULL;             // comecar a null para podermos comparar e guardarr a equipa mais valiosa
+    TEAM *menos_valiosa = NULL;            // comecar a null para podermos comparar e guardar a equipa menos valiosa
     float maior = -999999, menor = 999999; // valores iniciais extremos para comparar, em maior usar um valor negativo e maior um valor exagerado, assim qualquer valor real vai ser menor
 
-    PLAYER *jogador_mais = NULL;               // comecar a null para podermos comparar e guaradr a mais valiosa
-    PLAYER *jogador_menos = NULL;              // comecar a null para podermos comparar e guaradr a mais valiosa
-    float maior_j = -999999, menor_j = 999999; // valores iniciais extremos para comparar, em maior usar um valor negativo e maior um valor exagerado
+    PLAYER *jogador_mais = NULL;
+    PLAYER *jogador_menos = NULL;
+    float maior_j = -999999, menor_j = 999999;
 
     // Melhor jogador por posição (a usar enum POSITION)
     PLAYER *melhor_pos[5] = {NULL};
@@ -1396,7 +1443,10 @@ void relatorio_valias()
     }
 }
 
-///////////////////////////////////////////////////
+/* --------------------------------------------------------------------------------------------------------------------------------------------
+   menu_principal(), menu_gestao_equipas(), menu_gestao_jogadores():
+----------------------------------------------------------------------------------------------------------------------------------------------- */
+
 char menu_principal()
 {
     char op;
@@ -1449,7 +1499,8 @@ char menu_gestao_jogadores()
     return op;
 }
 
-///////////////////////////////////////////////////
+/* --------------------------------------------------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------------------------------------------------- */
 
 int main()
 {
