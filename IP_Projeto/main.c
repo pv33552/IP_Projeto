@@ -9,6 +9,7 @@
 #define MAX_players_per_team 15 // Numero maximo de atletas por equipa
 const char *posicoes[] = {"Ponta", "Lateral", "Central", "Pivo", "Guarda-Redes"};
 
+
 /* --------------------------------------------------------------------------------------------------------------------------------------------
     ESTRUTUREAS DO PROGRAMA:
 ----------------------------------------------------------------------------------------------------------------------------------------------- */
@@ -48,6 +49,7 @@ int nTeams = 0;          // Controlar numero de equipas
 int nPlayers = 0;        // Controlar numero de atletas
 // Contador de ID
 int proximoID = 0000000; // primeiro ID com 7 dígitos
+char *posicaoJogador(PLAYER p);
 
 /* --------------------------------------------------------------------------------------------------------------------------------------------
     FUNÇÕES DO PROGRAMA:
@@ -235,15 +237,30 @@ void listar_equipas()
     {
         printf("\nNao ha equipas registadas.\n");
         return;
+    }else{
+        printf("\n+----+------------------------+-----------+\n");
+        printf("| #  | Equipa                 | Jogadores |\n");
+        printf("+----+------------------------+-----------+\n");
+
+        for (int i = 0; i < nTeams; i++)
+        {
+            TEAM *t = listaEquipas[i];
+            printf("| %2d | %-22s | %9d |\n", 
+                i, 
+                t->name, 
+                t->nPlayers);
+        }
+
+        printf("+----+------------------------+-----------+\n");
     }
 
-    printf("\n**** LISTA DE EQUIPAS ****\n");
+    /*printf("\n**** LISTA DE EQUIPAS ****\n");
 
     for (int i = 0; i < nTeams; i++)
     {
         TEAM *t = listaEquipas[i];
         printf("%d - %s (%d jogadores)\n", i, t->name, t->nPlayers);
-    }
+    }*/
 }
 
 /* --------------------------------------------------------------------------------------------------------------------------------------------
@@ -895,6 +912,60 @@ void atualizar_jogador(int index)
 /* --------------------------------------------------------------------------------------------------------------------------------------------
    2.1 -> LISTAR JOGADORES:
 ----------------------------------------------------------------------------------------------------------------------------------------------- */
+void tabelaJogadores(int nJogadores, PLAYER* jogadores){
+
+     
+    printf("\n+----+----------------------+---------+------+----------------+-------+-------+-------+-------+-------+--------+\n");
+    printf("| #  | Nome                 | ID      | Ano  | Posicao        | Pts   | Rem   | Perd  | Ast   | Fin   | Min    |\n");
+    printf("+----+----------------------+---------+------+----------------+-------+-------+-------+-------+-------+--------+\n");
+    for (int i = 0; i < nJogadores; i++){
+        //char *pos = posicoes[jogadores[i].position];
+        printf("| %2d | %-20s | %07d | %4d | %-14s | %5.1f | %5.1f | %5.1f | %5.1f | %5.1f | %6d |\n",
+                i + 1,
+                jogadores[i].name,
+                jogadores[i].num_id,
+                jogadores[i].year,
+                posicaoJogador(jogadores[i]),
+                jogadores[i].mPontos,
+                jogadores[i].mRemates,
+                jogadores[i].mPerdas,
+                jogadores[i].mAssist,
+                jogadores[i].mFintas,
+                jogadores[i].tMinutos);
+        }
+        printf("+----+----------------------+---------+------+----------------+-------+-------+-------+-------+-------+--------+\n");
+}
+
+
+char *posicaoJogador(PLAYER p)
+{
+    static char pos[20];   // tamanho suficiente
+
+    switch (p.position)
+    {
+        case PONTA:
+            strcpy(pos, "PONTA");
+            break;
+        case LATERAL:
+            strcpy(pos, "LATERAL");
+            break;
+        case CENTRAL:
+            strcpy(pos, "CENTRAL");
+            break;
+        case PIVO:
+            strcpy(pos, "PIVO");
+            break;
+        case GR:
+            strcpy(pos, "Guarda-Redes");
+            break;
+        default:
+            strcpy(pos, "Desconhecida");
+    }
+
+    return pos;
+}
+
+
 void listar_jogadores()
 {
     PLAYER jogadores[1000]; // Array temporário para carregar jogadores
@@ -942,58 +1013,8 @@ void listar_jogadores()
         switch (opc)
         {
         case 1: // Listar todos
-            printf("\n+----+----------------------+---------+------+----------------+-------+-------+-------+-------+-------+--------+\n");
-            printf("| #  | Nome                 | ID      | Ano  | Posicao        | Pts   | Rem   | Perd  | Ast   | Fin   | Min    |\n");
-            printf("+----+----------------------+---------+------+----------------+-------+-------+-------+-------+-------+--------+\n");
-
-
-
-            for (int i = 0; i < nJogadores; i++)
-            {
-                PLAYER p = jogadores[i];
-                const char *pos;
-                switch (p.position)
-                {
-                case PONTA:
-                    pos = "PONTA";
-                    break;
-                case LATERAL:
-                    pos = "LATERAL";
-                    break;
-                case CENTRAL:
-                    pos = "CENTRAL";
-                    break;
-                case PIVO:
-                    pos = "PIVO";
-                    break;
-                case GR:
-                    pos = "GR";
-                    break;
-                default:
-                    pos = "Desconhecida";
-                    break;
-                }
-            printf("| %2d | %-20s | %07d | %4d | %-14s | %5.1f | %5.1f | %5.1f | %5.1f | %5.1f | %6d |\n",
-            i + 1,
-            p.name,
-            p.num_id,
-            p.year,
-            pos,
-            p.mPontos,
-            p.mRemates,
-            p.mPerdas,
-            p.mAssist,
-            p.mFintas,
-            p.tMinutos);
-
-
-                /*printf("\nJogador %d: %s | ID: %07d | Ano: %d | Pos: %s | Pontos=%.1f, Remates=%.1f, Perdas=%.1f, Assist=%.1f, Fintas=%.1f, Minutos=%d\n",
-                       i + 1, p.name, p.num_id, p.year, pos,
-                       p.mPontos, p.mRemates, p.mPerdas, p.mAssist, p.mFintas, p.tMinutos);*/
-            }
-            printf("+----+----------------------+---------+------+----------------+-------+-------+-------+-------+-------+--------+\n");
-
-
+            //Print da tabela Jogadores
+            tabelaJogadores(nJogadores, jogadores);
             break;
 
         case 2:
@@ -1003,6 +1024,7 @@ void listar_jogadores()
             printf("Digite o nome (ou parte do nome) a pesquisar: ");
             fgets(nome, sizeof(nome), stdin);
             nome[strcspn(nome, "\n")] = '\0'; // remover o \n
+            PLAYER jogadoresEncontrados[50];
 
             if (strlen(nome) == 0)
             {
@@ -1018,12 +1040,8 @@ void listar_jogadores()
                 termo[i] = tolower(termo[i]);
 
             // Array com os nomes das posições (mesmo na ordem do enum)
-            //const char *posicoes[] = {"Ponta", "Lateral", "Central", "Pivo", "Guarda-Redes"};
-
             int encontrados = 0;
-            printf("\n+----+----------------------+---------+------+----------------+-------+-------+-------+-------+-------+--------+\n");
-            printf("| #  | Nome                 | ID      | Ano  | Posicao        | Pts   | Rem   | Perd  | Ast   | Fin   | Min    |\n");
-            printf("+----+----------------------+---------+------+----------------+-------+-------+-------+-------+-------+--------+\n");
+
             for (int i = 0; i < nJogadores; i++)
             {
                 // Converter o nome do jogador para minúsculas
@@ -1036,42 +1054,17 @@ void listar_jogadores()
                 if (strstr(nomeJogador, termo))
                 {
                     // Obter a posição em texto
-                    char *pos = posicoes[jogadores[i].position];
-
-                    // Mostrar todos os dados
-                    printf("| %2d | %-20s | %07d | %4d | %-14s | %5.1f | %5.1f | %5.1f | %5.1f | %5.1f | %6d |\n",
-                        i + 1,
-                        jogadores[i].name,
-                        jogadores[i].num_id,
-                        jogadores[i].year,
-                        pos,
-                        jogadores[i].mPontos,
-                        jogadores[i].mRemates,
-                        jogadores[i].mPerdas,
-                        jogadores[i].mAssist,
-                        jogadores[i].mFintas,
-                        jogadores[i].tMinutos);
-                    /*printf("\nJogador encontrado:\n");
-                    printf("- Nome: %s\n", jogadores[i].name);
-                    printf("- ID: %07d\n", jogadores[i].num_id);
-                    printf("- Ano: %d\n", jogadores[i].year);
-                    printf("- Posicao: %s\n", pos);
-                    printf("- Pontos: %.1f | Remates: %.1f | Perdas: %.1f | Assistencias: %.1f | Fintas: %.1f | Minutos: %d\n",
-                           jogadores[i].mPontos,
-                           jogadores[i].mRemates,
-                           jogadores[i].mPerdas,
-                           jogadores[i].mAssist,
-                           jogadores[i].mFintas,
-                           jogadores[i].tMinutos);
-                        */
-                    encontrados++;
+                        jogadoresEncontrados[encontrados++] = jogadores[i];
                 }
             }
-            printf("+----+----------------------+---------+------+----------------+-------+-------+-------+-------+-------+--------+\n");
 
-            if (encontrados == 0)
+            if (encontrados == 0){
                 printf("\nNenhum jogador encontrado com o termo '%s'.\n", nome);
-
+            }else{
+                //Print da tabela Jogadores
+                tabelaJogadores(encontrados, jogadoresEncontrados);
+            }
+            
             break;
         }
 
@@ -1092,25 +1085,8 @@ void listar_jogadores()
                 }
             }
             printf("Jogadores ordenados alfabeticamente de forma CRESCENTE: \n");
-            printf("\n+----+----------------------+---------+------+----------------+-------+-------+-------+-------+-------+--------+\n");
-            printf("| #  | Nome                 | ID      | Ano  | Posicao        | Pts   | Rem   | Perd  | Ast   | Fin   | Min    |\n");
-            printf("+----+----------------------+---------+------+----------------+-------+-------+-------+-------+-------+--------+\n");
-            for (int i = 0; i < nJogadores; i++){
-                char *pos = posicoes[jogadores[i].position];
-                printf("| %2d | %-20s | %07d | %4d | %-14s | %5.1f | %5.1f | %5.1f | %5.1f | %5.1f | %6d |\n",
-                        i + 1,
-                        jogadores[i].name,
-                        jogadores[i].num_id,
-                        jogadores[i].year,
-                        pos,
-                        jogadores[i].mPontos,
-                        jogadores[i].mRemates,
-                        jogadores[i].mPerdas,
-                        jogadores[i].mAssist,
-                        jogadores[i].mFintas,
-                        jogadores[i].tMinutos);
-                }
-                printf("+----+----------------------+---------+------+----------------+-------+-------+-------+-------+-------+--------+\n");
+            //Print da tabela Jogadores
+            tabelaJogadores(nJogadores, jogadores);
             break;
         }
         case 4:
@@ -1131,27 +1107,8 @@ void listar_jogadores()
             }
 
             printf("Jogadores ordenados alfabeticamente de forma DECRESCENTE:\n");
-            printf("\n+----+----------------------+---------+------+----------------+-------+-------+-------+-------+-------+--------+\n");
-            printf("| #  | Nome                 | ID      | Ano  | Posicao        | Pts   | Rem   | Perd  | Ast   | Fin   | Min    |\n");
-            printf("+----+----------------------+---------+------+----------------+-------+-------+-------+-------+-------+--------+\n");
-            for (int i = 0; i < nJogadores; i++){
-                char *pos = posicoes[jogadores[i].position];
-                printf("| %2d | %-20s | %07d | %4d | %-14s | %5.1f | %5.1f | %5.1f | %5.1f | %5.1f | %6d |\n",
-                i + 1,
-                jogadores[i].name,
-                jogadores[i].num_id,
-                jogadores[i].year,
-                pos,
-                jogadores[i].mPontos,
-                jogadores[i].mRemates,
-                jogadores[i].mPerdas,
-                jogadores[i].mAssist,
-                jogadores[i].mFintas,
-                jogadores[i].tMinutos);
-            }
-            printf("+----+----------------------+---------+------+----------------+-------+-------+-------+-------+-------+--------+\n");
-                //printf("- %s (ID: %07d)\n", jogadores[i].name, jogadores[i].num_id);
-
+            //Print da tabela Jogadores
+            tabelaJogadores(nJogadores, jogadores);
             break;
         }
 
@@ -1170,25 +1127,8 @@ void listar_jogadores()
                 }
             }
             printf("Jogadores ordenados por ID:\n");
-            printf("\n+----+----------------------+---------+------+----------------+-------+-------+-------+-------+-------+--------+\n");
-            printf("| #  | Nome                 | ID      | Ano  | Posicao        | Pts   | Rem   | Perd  | Ast   | Fin   | Min    |\n");
-            printf("+----+----------------------+---------+------+----------------+-------+-------+-------+-------+-------+--------+\n");
-            for (int i = 0; i < nJogadores; i++){
-                char *pos = posicoes[jogadores[i].position];
-                printf("| %2d | %-20s | %07d | %4d | %-14s | %5.1f | %5.1f | %5.1f | %5.1f | %5.1f | %6d |\n",
-                i + 1,
-                jogadores[i].name,
-                jogadores[i].num_id,
-                jogadores[i].year,
-                pos,
-                jogadores[i].mPontos,
-                jogadores[i].mRemates,
-                jogadores[i].mPerdas,
-                jogadores[i].mAssist,
-                jogadores[i].mFintas,
-                jogadores[i].tMinutos);
-            }
-            printf("+----+----------------------+---------+------+----------------+-------+-------+-------+-------+-------+--------+\n");
+            //Print da tabela Jogadores
+            tabelaJogadores(nJogadores, jogadores);
             break;
         }
 
@@ -1196,13 +1136,14 @@ void listar_jogadores()
         {
             float x;
             int tipo;
+            PLAYER jogadoresEncontrados[50];
 
             // Perguntar se quer superior ou inferior
             printf("Digite 1 para VALIA TOTAL SUPERIOR a X\n");
             printf("Digite 2 para VALIA TOTAL INFERIOR a X\n");
             printf("Opcao: ");
             scanf("%d", &tipo);
-            
+
             if (tipo != 1 && tipo != 2)
             {
                 printf("Opcao invalida!\n");
@@ -1223,38 +1164,23 @@ void listar_jogadores()
             printf(" a %.2f:\n", x);
 
             // Percorrer todos os jogadores
-            printf("\n+----+----------------------+---------+------+----------------+-------+-------+-------+-------+-------+--------+\n");
-            printf("| #  | Nome                 | ID      | Ano  | Posicao        | Pts   | Rem   | Perd  | Ast   | Fin   | Min    |\n");
-            printf("+----+----------------------+---------+------+----------------+-------+-------+-------+-------+-------+--------+\n");
             for (int i = 0; i < nJogadores; i++)
             {
                 float val = calcular_valia(&jogadores[i]);
 
                 if ((tipo == 1 && val > x) || (tipo == 2 && val < x))
                 {
-                    /*printf("%s | ID: %07d | Valia: %.2f\n",
-                           jogadores[i].name,
-                           jogadores[i].num_id,
-                           val);*/
-                    printf("| %2d | %-20s | %07d | %4d | %-14s | %5.1f | %5.1f | %5.1f | %5.1f | %5.1f | %6d |\n",
-                    i + 1,
-                    jogadores[i].name,
-                    jogadores[i].num_id,
-                    jogadores[i].year,
-                    posicoes[jogadores[i].position],
-                    jogadores[i].mPontos,
-                    jogadores[i].mRemates,
-                    jogadores[i].mPerdas,
-                    jogadores[i].mAssist,
-                    jogadores[i].mFintas,
-                    jogadores[i].tMinutos);
-                    encontrados++;
+                    jogadoresEncontrados[encontrados++] = jogadores[i];
                 }
             }
-            printf("+----+----------------------+---------+------+----------------+-------+-------+-------+-------+-------+--------+\n");
-
-            if (encontrados == 0)
+            
+            if (encontrados == 0){
                 printf("Nenhum jogador encontrado com esses criterios.\n");
+            }else{
+                //Print da tabela Jogadores
+                tabelaJogadores(encontrados, jogadoresEncontrados);
+            }
+        
 
             break;
         }
@@ -1262,37 +1188,24 @@ void listar_jogadores()
         case 7:
         {
             int ano;
-            int encontrado = 0; // flag
+            int encontrados = 0; // flag
+            PLAYER jogadoresEncontrados[50];
 
             printf("Digite o ano de nascimento: ");
             scanf("%d", &ano);
-            printf("\n+----+----------------------+---------+------+----------------+-------+-------+-------+-------+-------+--------+\n");
-            printf("| #  | Nome                 | ID      | Ano  | Posicao        | Pts   | Rem   | Perd  | Ast   | Fin   | Min    |\n");
-            printf("+----+----------------------+---------+------+----------------+-------+-------+-------+-------+-------+--------+\n");
+
             for (int i = 0; i < nJogadores; i++)
             {
                 if (jogadores[i].year == ano)
                 {
-                    printf("| %2d | %-20s | %07d | %4d | %-14s | %5.1f | %5.1f | %5.1f | %5.1f | %5.1f | %6d |\n",
-                    i + 1,
-                    jogadores[i].name,
-                    jogadores[i].num_id,
-                    jogadores[i].year,
-                    posicoes[jogadores[i].position],
-                    jogadores[i].mPontos,
-                    jogadores[i].mRemates,
-                    jogadores[i].mPerdas,
-                    jogadores[i].mAssist,
-                    jogadores[i].mFintas,
-                    jogadores[i].tMinutos);
-                    encontrado++;
+                    jogadoresEncontrados[encontrados++] = jogadores[i];
                 }
             }
-            printf("+----+----------------------+---------+------+----------------+-------+-------+-------+-------+-------+--------+\n");
-
-            if (!encontrado)
-            {
+            
+            if (encontrados == 0){
                 printf("Nenhum jogador encontrado com o ano de nascimento %d.\n", ano);
+            }else{
+                tabelaJogadores(encontrados, jogadoresEncontrados);
             }
 
             break;
@@ -1301,6 +1214,7 @@ void listar_jogadores()
         case 8:
         {
             int ano, tipo;
+            PLAYER jogadoresEncontrados[50];
 
             // Perguntar se quer superior ou inferior
             printf("Digite 1 para jogadores com ano de nascimento SUPERIOR a X\n");
@@ -1333,16 +1247,21 @@ void listar_jogadores()
             {
                 if ((tipo == 1 && jogadores[i].year > ano) || (tipo == 2 && jogadores[i].year < ano))
                 {
-                    printf("- %s | Ano: %d | ID: %07d\n",
+                    jogadoresEncontrados[encontrados++] = jogadores[i];
+                    /*printf("- %s | Ano: %d | ID: %07d\n",
                            jogadores[i].name,
                            jogadores[i].year,
                            jogadores[i].num_id);
-                    encontrados++;
+                    encontrados++;*/
                 }
             }
 
-            if (encontrados == 0)
+            if (encontrados == 0){
                 printf("Nenhum jogador encontrado com esses criterios.\n");
+            }else{
+                tabelaJogadores(encontrados, jogadoresEncontrados);
+            }
+                
 
             break;
         }
@@ -1684,7 +1603,6 @@ char menu_gestao_jogadores()
     printf("#--------------------------------#\n");
     printf("\nEscolha uma opcao: ");
     scanf(" %c", &op);
-    system("cls||clear");
     return op;
 }
 
@@ -1715,7 +1633,6 @@ int main()
         {
 
         case '1':
-        {
             system("cls||clear");
             char opc;
 
@@ -1739,6 +1656,8 @@ int main()
                         int idx;
                         scanf("%d", &idx);
                         remover_equipa(idx);
+                    }else{
+                        system("cls||clear");
                     }
                     break;
                 case '2':
@@ -1748,9 +1667,7 @@ int main()
             } while (opc != '3');
 
             break;
-        }
         case '2':
-        {
             system("cls||clear");
             char opc2;
 
@@ -1793,10 +1710,12 @@ int main()
                 }
             } while (opc2 != '5');
             break;
-        }
         case '3':
             system("cls||clear");
             relatorio_valias();
+            printf("\nPrima ENTER para voltar ao menu principal...");
+            getchar(); 
+            getchar();  
             break;
         case '4':
             system("cls||clear");
