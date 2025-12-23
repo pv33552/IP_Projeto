@@ -760,7 +760,8 @@ void atualizar_jogador(int index)
 
     int opc;
     scanf("%d", &opc);
-    getchar(); // limpar buffer
+    while (getchar() != '\n'); // limpa buffer
+getchar();                 // espera ENTER real
 
     if (opc == 3)
     {
@@ -1573,7 +1574,8 @@ int main()
             system("cls||clear");
             relatorio_valias();
             printf("\nPrima ENTER para voltar ao menu principal...");
-            getchar();
+            while (getchar() != '\n');      // limpa buffer
+            getchar(); // espera ENTER real
             break;
         case '4':
             system("cls||clear");
