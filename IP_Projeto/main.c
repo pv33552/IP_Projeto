@@ -735,6 +735,13 @@ void remover_todos_jogadores()
 /* --------------------------------------------------------------------------------------------------------------------------------------------
     2.3 alterar_jogadores() -> ATUALIZAR JOGADOR:
 ----------------------------------------------------------------------------------------------------------------------------------------------- */
+void limparBuffer()
+{
+    int c;
+    while ((c = getchar()) != '\n' && c != EOF);
+}
+
+
 void atualizar_jogador(int index)
 {
     // "+"" → ler E escrever no ficheiro binario jogadores.dat sem remover conteudo existente
@@ -760,8 +767,7 @@ void atualizar_jogador(int index)
 
     int opc;
     scanf("%d", &opc);
-    while (getchar() != '\n'); // limpa buffer
-getchar();                 // espera ENTER real
+    limparBuffer();                 // espera ENTER real
 
     if (opc == 3)
     {
@@ -1306,6 +1312,7 @@ void alterar_jogadores()
         int idx;
         printf("\nEscolha o numero do jogador a atualizar (1 a %d): ", count);
         scanf("%d", &idx);
+        limparBuffer(); // limpar buffer
 
         if (idx < 1 || idx > count)
         {
@@ -1534,7 +1541,7 @@ int main()
 
             do
             {
-                system("cls||clear");
+                //system("cls||clear");
                 opc2 = menu_gestao_jogadores();
                 switch (opc2)
                 {
