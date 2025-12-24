@@ -846,6 +846,9 @@ void atualizar_jogador(int index)
     fclose(fic);
 
     printf("\nJogador atualizado com sucesso!\n");
+printf("Prima ENTER para continuar...");
+getchar();
+
 }
 
 /* --------------------------------------------------------------------------------------------------------------------------------------------

@@ -1,0 +1,172 @@
+**** RELATORIO DE EQUIPAS ****
+
+Total de equipas: 3
+
+---------------------------------------
+EQUIPA 1
+Nome: Benfica
+Numero de Jogadores: 5
+
+   Jogador 1:
+      Nome: Rangel da Rosa
+      ID: 0000001
+      Ano de nascimento: 1998
+      Posicao: 4
+      Media Pontos: 0.00
+      Media Remates: 0.00
+      Media Assist: 0.00
+      Media Perdas: 2.00
+
+   Jogador 2:
+      Nome: Kristian Olsen
+      ID: 0000002
+      Ano de nascimento: 2000
+      Posicao: 1
+      Media Pontos: 1.00
+      Media Remates: 2.00
+      Media Assist: 3.00
+      Media Perdas: 9.00
+
+   Jogador 3:
+      Nome: Alejandro Barbeito
+      ID: 0000003
+      Ano de nascimento: 1999
+      Posicao: 2
+      Media Pontos: 5.00
+      Media Remates: 9.00
+      Media Assist: 15.00
+      Media Perdas: 12.00
+
+   Jogador 4:
+      Nome: Mikita Vailupau
+      ID: 0000004
+      Ano de nascimento: 2001
+      Posicao: 0
+      Media Pontos: 25.00
+      Media Remates: 50.00
+      Media Assist: 10.00
+      Media Perdas: 3.00
+
+   Jogador 5:
+      Nome: Fabio Silva
+      ID: 0000005
+      Ano de nascimento: 2000
+      Posicao: 3
+      Media Pontos: 20.00
+      Media Remates: 35.00
+      Media Assist: 3.00
+      Media Perdas: 20.00
+
+
+---------------------------------------
+EQUIPA 2
+Nome: FC Porto
+Numero de Jogadores: 5
+
+   Jogador 1:
+      Nome: Diogo Rema
+      ID: 0000006
+      Ano de nascimento: 2004
+      Posicao: 4
+      Media Pontos: 0.00
+      Media Remates: 0.00
+      Media Assist: 0.00
+      Media Perdas: 1.00
+
+   Jogador 2:
+      Nome: Vasco Costa
+      ID: 0000007
+      Ano de nascimento: 2005
+      Posicao: 1
+      Media Pontos: 1.00
+      Media Remates: 2.00
+      Media Assist: 5.00
+      Media Perdas: 6.00
+
+   Jogador 3:
+      Nome: Rui Silva
+      ID: 0000008
+      Ano de nascimento: 1993
+      Posicao: 2
+      Media Pontos: 2.00
+      Media Remates: 6.00
+      Media Assist: 9.00
+      Media Perdas: 8.00
+
+   Jogador 4:
+      Nome: Daymaro Salina
+      ID: 0000009
+      Ano de nascimento: 1987
+      Posicao: 3
+      Media Pontos: 9.00
+      Media Remates: 20.00
+      Media Assist: 8.00
+      Media Perdas: 12.00
+
+   Jogador 5:
+      Nome: Pedro Oliveira
+      ID: 0000010
+      Ano de nascimento: 2002
+      Posicao: 0
+      Media Pontos: 12.00
+      Media Remates: 25.00
+      Media Assist: 2.00
+      Media Perdas: 19.00
+
+
+---------------------------------------
+EQUIPA 3
+Nome: Sporting
+Numero de Jogadores: 5
+
+   Jogador 1:
+      Nome: Santiago Povoas
+      ID: 0000011
+      Ano de nascimento: 2002
+      Posicao: 4
+      Media Pontos: 0.00
+      Media Remates: 0.00
+      Media Assist: 0.00
+      Media Perdas: 2.00
+
+   Jogador 2:
+      Nome: Emil Berlin
+      ID: 0000012
+      Ano de nascimento: 2001
+      Posicao: 1
+      Media Pontos: 1.00
+      Media Remates: 3.00
+      Media Assist: 14.00
+      Media Perdas: 20.00
+
+   Jogador 3:
+      Nome: Jan Gurri
+      ID: 0000013
+      Ano de nascimento: 2000
+      Posicao: 2
+      Media Pontos: 6.00
+      Media Remates: 12.00
+      Media Assist: 14.00
+      Media Perdas: 23.00
+
+   Jogador 4:
+      Nome: Carlos Alvares
+      ID: 0000014
+      Ano de nascimento: 1999
+      Posicao: 0
+      Media Pontos: 16.00
+      Media Remates: 25.00
+      Media Assist: 4.00
+      Media Perdas: 23.00
+
+   Jogador 5:
+      Nome: Edy Silva
+      ID: 0000015
+      Ano de nascimento: 2000
+      Posicao: 3
+      Media Pontos: 23.00
+      Media Remates: 35.00
+      Media Assist: 3.00
+      Media Perdas: 30.00
+
+
