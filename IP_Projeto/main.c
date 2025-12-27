@@ -1461,7 +1461,7 @@ char menu_gestao_equipas()
 char menu_gestao_jogadores()
 {
     char op;
-    system("cls||clear");
+    //system("cls||clear");
     printf("\nGestao de jogadores: \n");
     printf("#--------------------------------#\n");
     printf("| 1 - Listar/Pesquisar jogadores |\n");
